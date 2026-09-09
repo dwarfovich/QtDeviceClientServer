@@ -16,6 +16,7 @@ set(PROJECT_SOURCES
     tcp_server.cpp
     tcp_server.h
     tcp_server_worker.h
+    message_end_marker.h
 )
 
 add_library(${PROJECT_NAME} STATIC

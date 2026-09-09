@@ -34,6 +34,7 @@ signals:
     void stopWorker();
     void startWorker(qint16 port);
     void newClientConnected(std::size_t id, const QHostAddress& address);
+    void dataReceived(std::size_t clientId, QByteArray data);
     //void messageReceived(std::size_t clientId, )
 private:
     QThread       thread_;

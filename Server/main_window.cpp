@@ -1,17 +1,21 @@
 #include "pch.h"
 #include "main_window.h"
+#include "devices_table_model.h"
 
 MainWindow::MainWindow(const std::shared_ptr<Logger>& logger, QWidget* parent)
-    : QMainWindow { parent }, logger_ { logger }, server_ { nullptr, logger_ } // server_{this, logger_}
+    : QMainWindow { parent }, logger_ { logger }, server_ { nullptr, logger_ }, devicesModel_{new DevicesTableModel {this}}
 {
     Q_ASSERT(logger);
 
     ui.setupUi(this);
+
+    ui.clientsTableView->setModel(devicesModel_);
+
     ui.logTextEdit->setReadOnly(true);
     connect(logger_.get(), &Logger::messageAdded, this, &MainWindow::onNewLogMessage);
     logger_->logMessage("MainWindow started");
 
-    connect(&server_, &DeviceServer::newClientConnected, this, [this](const DeviceInfo& device) {
+    connect(&server_, &DeviceServer::newClientConnected, [this](const DeviceInfo& device) {
         logger_->logMessage("new device connected");
     });
 

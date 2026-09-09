@@ -10,7 +10,7 @@
 
 #include <memory>
 
-class TcpServer;
+class DevicesTableModel;
 
 class MainWindow : public QMainWindow
 {
@@ -19,7 +19,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(const std::shared_ptr<Logger>& logger, QWidget* parent = nullptr);
     ~MainWindow(){
-        //server_.stop();
     }
 
 private slots:
@@ -32,5 +31,7 @@ private:
     Ui::MainWindowClass     ui;
     std::shared_ptr<Logger> logger_;
     DeviceServer server_;
+    DevicesTableModel*       devicesModel_ = nullptr;
+
 //    TcpServer server_;
 };

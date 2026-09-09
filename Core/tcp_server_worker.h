@@ -21,6 +21,7 @@ public:
 signals:
     void stopped();
     void newClientConnected(std::size_t id, QHostAddress address);
+    void dataRead(std::size_t clientId, QByteArray data);
 
 public slots:
     void start(quint16 port)
@@ -50,14 +51,12 @@ public slots:
             if (nextSocketId_ == std::numeric_limits<std::size_t>::max()) {
                 socket->disconnectFromHost();
             } else {
-                const auto nextId = nextSocketId_++;
-                sockets_.insert({ nextId, socket });
+                const auto newId = nextSocketId_++;
+                idToSocketsMap_.insert({ newId, socket });
+                socketsToIdMap_.insert({socket, newId});
                 connect(socket, &QTcpSocket::disconnected, this, &TcpServerWorker::onDisconnected);
-                // connect(socket, &QTcpSocket::readyRead, this, &TcpServer::onReadyRead);
-                emit newClientConnected(nextId, socket->peerAddress());
-
-                logger_->logMessage("Client connected to server: " + socket->peerAddress().toString() + " "
-                                    + QString::number(socket->peerPort()));
+                connect(socket, &QTcpSocket::readyRead, this, &TcpServerWorker::onReadyRead);
+                emit newClientConnected(newId, socket->peerAddress());
             }
         }
     }
@@ -69,9 +68,11 @@ public slots:
             return;
         }
 
-        const QByteArray data = socket->readAll();
-        qDebug() << "Received:" << data;
-        socket->write("Hello from server!\n");
+        const auto& data = socket->readAll();
+        const auto  id   = socketsToIdMap_.at(socket);
+        emit dataRead(id, data);
+        //qDebug() << "Received:" << data;
+        //socket->write("Hello from server!\n");
     }
 
     void write()
@@ -89,13 +90,17 @@ public slots:
         qDebug() << "Client disconnected";
 
         std::erase(clients_, socket);
+        const auto id = socketsToIdMap_.at(socket);
+        idToSocketsMap_.erase(id);
+        socketsToIdMap_.erase(socket);
         socket->deleteLater();
     }
 
 private:
     QTcpServer*                                  server_;
     std::vector<QTcpSocket*>                     clients_;
-    std::unordered_map<std::size_t, QTcpSocket*> sockets_;
-    std::size_t                                  nextSocketId_ = 0;
+    std::unordered_map<std::size_t, QTcpSocket*> idToSocketsMap_;
+    std::unordered_map<QTcpSocket*, std::size_t> socketsToIdMap_;
+    std::size_t                                  nextSocketId_ = 1;
     std::shared_ptr<Logger>                      logger_       = nullptr;
 };

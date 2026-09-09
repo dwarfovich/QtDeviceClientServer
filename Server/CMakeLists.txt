@@ -17,6 +17,7 @@ set(PROJECT_SOURCES
     device_server.h
     device_info.h
     device_status.h
+    devices_table_model.h
 )
 
 qt_add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})

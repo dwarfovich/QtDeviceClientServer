@@ -9,6 +9,7 @@ TcpServer::TcpServer(QObject* parent, const std::shared_ptr<Logger>& logger)
     : QObject { parent }, logger_ { logger }, worker_ { new TcpServerWorker { this, logger } }
 {
     connect(worker_, &TcpServerWorker::newClientConnected, this, &TcpServer::newClientConnected, Qt::QueuedConnection);
+    connect(worker_, &TcpServerWorker::dataRead, this, &TcpServer::dataReceived, Qt::QueuedConnection);
     connect(this, &TcpServer::stopWorker, worker_, &TcpServerWorker::stop, Qt::QueuedConnection);
     connect(worker_, &TcpServerWorker::stopped, &thread_, &QThread::quit, Qt::DirectConnection);
     connect(&thread_, &QThread::finished, worker_, &QObject::deleteLater);
