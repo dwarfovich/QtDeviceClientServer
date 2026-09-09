@@ -5,19 +5,22 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
-class ServerWorker : public QObject
+#include <unordered_map>
+
+class TcpServerWorker : public QObject
 {
     Q_OBJECT
 
 public:
-    ServerWorker(QObject* parent, const std::shared_ptr<Logger>& logger)
+    TcpServerWorker(QObject* parent, const std::shared_ptr<Logger>& logger)
         : QObject { parent }, server_ { new QTcpServer { this } }, logger_ { logger }
     {
-        connect(server_, &QTcpServer::newConnection, this, &ServerWorker::onNewConnection);
+        connect(server_, &QTcpServer::newConnection, this, &TcpServerWorker::onNewConnection);
     }
 
 signals:
     void stopped();
+    void newClientConnected(std::size_t id, QHostAddress address);
 
 public slots:
     void start(quint16 port)
@@ -44,13 +47,18 @@ public slots:
     {
         while (server_->hasPendingConnections()) {
             QTcpSocket* socket = server_->nextPendingConnection();
-            clients_.push_back(socket);
+            if (nextSocketId_ == std::numeric_limits<std::size_t>::max()) {
+                socket->disconnectFromHost();
+            } else {
+                const auto nextId = nextSocketId_++;
+                sockets_.insert({ nextId, socket });
+                connect(socket, &QTcpSocket::disconnected, this, &TcpServerWorker::onDisconnected);
+                // connect(socket, &QTcpSocket::readyRead, this, &TcpServer::onReadyRead);
+                emit newClientConnected(nextId, socket->peerAddress());
 
-            logger_->logMessage("Client connected to server: " + socket->peerAddress().toString() + " "
-                                + QString::number(socket->peerPort()));
-
-            // connect(socket, &QTcpSocket::readyRead, this, &Server::onReadyRead);
-            connect(socket, &QTcpSocket::disconnected, this, &ServerWorker::onDisconnected);
+                logger_->logMessage("Client connected to server: " + socket->peerAddress().toString() + " "
+                                    + QString::number(socket->peerPort()));
+            }
         }
     }
 
@@ -64,6 +72,11 @@ public slots:
         const QByteArray data = socket->readAll();
         qDebug() << "Received:" << data;
         socket->write("Hello from server!\n");
+    }
+
+    void write()
+    {
+        // clients_.front()->write
     }
 
     void onDisconnected()
@@ -80,7 +93,9 @@ public slots:
     }
 
 private:
-    QTcpServer*              server_;
-    std::vector<QTcpSocket*> clients_;
-    std::shared_ptr<Logger>  logger_;
+    QTcpServer*                                  server_;
+    std::vector<QTcpSocket*>                     clients_;
+    std::unordered_map<std::size_t, QTcpSocket*> sockets_;
+    std::size_t                                  nextSocketId_ = 0;
+    std::shared_ptr<Logger>                      logger_       = nullptr;
 };

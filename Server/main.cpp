@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "main_window.h"
-#include "server.h"
 
+#include "Core/tcp_server.h"
 #include "Core/logger.h"
 
 #include <QDebug>

@@ -2,19 +2,20 @@
 
 #include <QObject>
 #include <QTcpServer>
+#include <QThread>
 
 #include <memory>
 
 class Logger;
-class ServerWorker;
+class TcpServerWorker;
 
-class Server : public QObject
+class TcpServer : public QObject
 {
     Q_OBJECT
 
 public:
-    Server(QObject* parent, const std::shared_ptr<Logger>& logger);
-    ~Server() { stop(); }
+    TcpServer(QObject* parent, const std::shared_ptr<Logger>& logger);
+    ~TcpServer() { stop(); }
 
 public slots:
     void start(quint16 port);
@@ -28,12 +29,14 @@ public slots:
         thread_.wait();
     }
 
+
 signals:
     void stopWorker();
     void startWorker(qint16 port);
-
+    void newClientConnected(std::size_t id, const QHostAddress& address);
+    //void messageReceived(std::size_t clientId, )
 private:
     QThread       thread_;
-    ServerWorker* worker_;
+    TcpServerWorker* worker_;
     std::shared_ptr<Logger> logger_;
 };
