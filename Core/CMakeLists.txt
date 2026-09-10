@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
     message_type.h
     messages.h
     json_message_serializer.h
+    json_message_deserializer.h
 )
 
 add_library(${PROJECT_NAME} STATIC

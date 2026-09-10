@@ -10,7 +10,8 @@ enum class Type : std::uint8_t
 {
     NetworkMessage,
     DeviceStatus,
-    Log
+    Log,
+    StartRequest
 };
 
 inline QString toString(Type type)
@@ -23,4 +24,4 @@ inline QString toString(Type type)
     }
 }
 
-}
+} // namespace device_message

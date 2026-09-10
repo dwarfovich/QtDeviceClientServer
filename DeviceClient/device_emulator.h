@@ -1,12 +1,10 @@
 #pragma once
 
 #include "backend_communicator.h"
+#include "device_emulator_settings.h"
 
-#include "Core/tcp_data_writer.h"
-
-#include <QTcpSocket>
 #include <QTimer>
-#include <QThread>
+#include <QRandomGenerator>
 
 #include <atomic>
 
@@ -15,78 +13,80 @@ class DeviceEmulator : public QObject
     Q_OBJECT
 
 public:
-    DeviceEmulator(QObject* parent)
-        : QObject { parent }
-        , communicator_ { new BackendCommunicator { this } }
-        //, connectionTimer_ { new QTimer { this } }
-        , dataTimer_ { new QTimer { this } }
+    DeviceEmulator(QObject* parent) : QObject { parent }, communicator_ { new BackendCommunicator { this } }
     {
-        connect(communicator_, &BackendCommunicator::connected, this, &DeviceEmulator::onNetworkConnected);
+        // connect(communicator_, &BackendCommunicator::connected, this, &DeviceEmulator::onNetworkConnected);
         connect(communicator_, &BackendCommunicator::disconnected, this, &DeviceEmulator::onNetworkDisconnected);
+        connect(&dataTimer_, &QTimer::timeout, this, &DeviceEmulator::onDataTimerTimeout);
 
-        //writer_ = new TcpDataWriter(this);
-        //communicator_->setWriter(writer_);
-
-        //connect(writer_, &TcpDataWriter::networkDisconnected, this, &DeviceEmulator::onNetworkDisconnected);
-        //connect(writer_, &TcpDataWriter::networkConnected, this, &DeviceEmulator::onNetworkConnected);
-        //connect(writer_, &TcpDataWriter::messageReceived, this, &DeviceEmulator::onBackendMessageReceived);
-
-        //connect(this, &DeviceEmulator::stopRequested, writer_, &TcpDataWriter::disconnect);
-
-        //connect(connectionTimer_, &QTimer::timeout, this, &DeviceEmulator::tryConnect);
-        //connect(dataTimer_, &QTimer::timeout, this, &DeviceEmulator::sendData);
-
-        //connectionTimer_->setInterval(100);
-        //dataTimer_->setInterval(500);
+        communicator_->setStartRequestHandler([this](const device_message::StartRequest& message) {
+            onStartRequested(message);
+        });
     }
 
 public slots:
-    void start() { 
-        communicator_->start();
-        //tryConnect();
-        //connectionTimer_->start();
-    }
+    void start() { communicator_->start(); }
     void stop()
     {
-        //connectionTimer_->stop();
-        //dataTimer_->stop();
-        //emit stopRequested();
+        dataTimer_.stop();
+        communicator_->stop();
     }
-
-protected:
-signals:
-    void stopRequested();
 
 private slots:
-    void onNetworkConnected()
+    void onNetworkDisconnected() { dataTimer_.stop(); }
+
+    void onDataTimerTimeout() { sendRandomData(); }
+
+    void sendRandomData()
     {
-       // connectionTimer_->stop();
-        dataTimer_->start(600);
-    }
-    //void tryConnect() { writer_->connectTo(QHostAddress::LocalHost, 12345); }
-    void onNetworkDisconnected()
-    {
-        dataTimer_->stop();
-      //  connectionTimer_->start();
-    }
-    void onBackendMessageReceived(const QByteArray& data) {
-        qDebug() << "Client received message: " << data;
-    }
-    void sendData()
-    {
-        communicator_->sendString("Hello from device!");
-        dataTimer_->setInterval(1000);
+        using namespace device_message;
+        switch (randomGenerator_.bounded(3)) {
+            case 0:
+                communicator_->sendMessage(NetworkMetrics { .bandwidth  = randomDouble(0., 1000.),
+                                                            .latency    = randomDouble(0., 1000.),
+                                                            .packetLoss = randomDouble(0., 100.) });
+                break;
+            case 1:
+                communicator_->sendMessage(DeviceStatus { .uptime      = randomInt(0ull, 10ull),
+                                                          .cpuUsage    = randomInt<std::uint8_t>(0, 100),
+                                                          .memoryUsage = randomInt<std::uint8_t>(0, 100) });
+                break;
+            case 2:
+                communicator_->sendMessage(Log { .message = randomText(), .severity = randomLogMessageSeverity() });
+                break;
+            default: Q_UNREACHABLE();
+        }
     }
 
 private:
-    bool connectToBackend(const QHostAddress& address, quint16 port) {}
+    void onStartRequested(const device_message::StartRequest& message)
+    {
+        dataTimer_.start(randomDouble(settings_.minDataSendingPeriod, settings_.maxDataSendingPeriod));
+    }
+
+    double randomDouble(double min, double max)
+    {
+        Q_ASSERT(min < max);
+
+        return min + randomGenerator_.generateDouble() * (max - min);
+    }
+
+    template<typename T>
+    T randomInt(T min, T max)
+    {
+        Q_ASSERT(min < max);
+
+        return randomGenerator_.bounded(min, max);
+    }
+
+    QString randomText() { return {}; }
+
+    device_message::LogMessageSeverity randomLogMessageSeverity() { return {}; }
 
 private:
-    static constexpr int connectionPeriod_ = 5000;
+    inline static constexpr DeviceEmulatorSettings settings_;
 
-    std::atomic_flag     stopRequested_;
-    //QTimer*              connectionTimer_ = nullptr;
-    QTimer*              dataTimer_       = nullptr;
-    //TcpDataWriter*       writer_          = nullptr;
-    BackendCommunicator* communicator_    = nullptr;
+    QTimer               dataTimer_;
+    BackendCommunicator* communicator_ = nullptr;
+    QRandomGenerator     randomGenerator_;
 };

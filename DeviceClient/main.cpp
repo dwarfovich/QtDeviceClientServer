@@ -14,15 +14,8 @@ int main(int argc, char* argv[])
     QCoreApplication app(argc, argv);
 
     DeviceEmulator device{ nullptr };
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &device, &DeviceEmulator::stop);
     device.start();
-    //auto* device = new DeviceEmulator {nullptr};
-    //auto* thread = new QThread;
-
-    //device->moveToThread(thread);
-
-    //QObject::connect(thread, &QThread::started, device, &DeviceEmulator::start);
-
-    //thread->start();
 
     return app.exec();
 

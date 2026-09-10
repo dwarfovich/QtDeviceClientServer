@@ -13,6 +13,7 @@ set(PROJECT_SOURCES
     main.cpp
     device_emulator.h
     backend_communicator.h
+    device_emulator_settings.h
 )
 
 qt_add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})

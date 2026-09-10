@@ -1,55 +1,82 @@
 #pragma once
 
-#include "Core/i_data_writer.h"
-#include "Core/tcp_data_writer.h"
 #include "Core/messages.h"
+#include "Core/message_end_marker.h"
+#include "Core/json_message_serializer.h"
+#include "Core/json_message_deserializer.h"
 
 #include <QTcpSocket>
-#include< QTimer>
+#include <QTimer>
 
 class BackendCommunicator : public QObject
 {
     Q_OBJECT
 public:
-    BackendCommunicator(QObject* parent) : QObject { parent } //, writer_ { writer }
+    BackendCommunicator(QObject* parent) : QObject { parent }
     {
-        //Q_ASSERT(writer);
-
         connectionTimer_.setInterval(5000);
 
         connect(&connectionTimer_, &QTimer::timeout, this, &BackendCommunicator::onDisconnected);
         connect(&socket_, &QTcpSocket::connected, this, &BackendCommunicator::onConnected);
-        // writer_->setParent(this);
+        connect(&socket_, &QTcpSocket::readyRead, this, &BackendCommunicator::onDataReceived);
     }
 
-    void start() { 
-        connectSocket();
-        connectionTimer_.start(); }
-
-    void sendString(const QString& text)
+    void start()
     {
-        qDebug() << "Sending string: " << text;
-        // writer_->write(text.toUtf8());
-        socket_.write(text.toUtf8() + device_message::dataEndMarker);
+        connectSocket();
+        connectionTimer_.start();
     }
 
-    template <typename MessageType>
+    void stop()
+    {
+        connectionTimer_.stop();
+        if (socket_.state() != QAbstractSocket::UnconnectedState) {
+            socket_.disconnectFromHost();
+            if (socket_.state() != QAbstractSocket::UnconnectedState) {
+                socket_.abort();
+            }
+        }
+    }
+
+    void sendString(const QString& text) { socket_.write(text.toUtf8() + device_message::dataEndMarker); }
+
+    template<typename MessageType>
     void sendMessage(const MessageType& message)
     {
-
+        auto data = jsonSerializer_.serialize(message) + device_message::dataEndMarker;
+        socket_.write(data);
     }
 
-public slots:
+    void setStartRequestHandler(std::function<void(const device_message::StartRequest&)> handler)
+    {
+        jsonDeserializer_.setStartRequestHandler(std::move(handler));
+    }
+
 signals:
     void disconnected();
     void connected();
 
 private slots:
-    void onDisconnected() { connectionTimer_.start();
+    void onDisconnected()
+    {
+        connectionTimer_.start();
         emit disconnected();
     }
-    void onConnected() { connectionTimer_.stop();
+
+    void onConnected()
+    {
+        connectionTimer_.stop();
         emit connected();
+    }
+
+    void onDataReceived()
+    {
+        currentData_ += socket_.readAll();
+        if (currentData_.endsWith(device_message::dataEndMarker)) {
+            currentData_.resize(currentData_.length() - device_message::dataEndMarker.length());
+            jsonDeserializer_.deserialize(currentData_);
+            currentData_.clear();
+        }
     }
 
 private:
@@ -62,7 +89,9 @@ private:
     }
 
 private:
-    QTimer     connectionTimer_;
-    QTcpSocket socket_;
-    // TcpDataWriter* writer_;
+    JsonMessageSerializer   jsonSerializer_;
+    JsonMessageDeserializer jsonDeserializer_;
+    QTimer                  connectionTimer_;
+    QTcpSocket              socket_;
+    QByteArray              currentData_;
 };
