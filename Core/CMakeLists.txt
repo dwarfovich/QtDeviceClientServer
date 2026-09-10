@@ -19,6 +19,8 @@ set(PROJECT_SOURCES
     message_end_marker.h
     i_data_writer.h 
     tcp_data_writer.h
+    message_type.h
+    messages.h
 )
 
 add_library(${PROJECT_NAME} STATIC

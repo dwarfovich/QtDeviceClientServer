@@ -2,4 +2,8 @@
 
 #include <QByteArray>
 
-inline const QByteArray messageEndMarker = "\r\n\r\n";
+namespace message{
+
+    inline const QByteArray dataEndMarker = "\r\n\r\n";
+
+}

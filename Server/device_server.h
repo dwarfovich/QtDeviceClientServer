@@ -43,10 +43,10 @@ private slots:
             iter->second += newData;
         }
         const auto& data = iter->second;
-        if (data.endsWith(messageEndMarker)){
+        if (data.endsWith(message::dataEndMarker)){
             processReceivedMessage(clientId, data);
         }
-        server_.sendMessage(clientId , "Hello from server!" + messageEndMarker);
+        server_.sendMessage(clientId, "Hello from server!" + message::dataEndMarker);
     }
 
     private: // methods
