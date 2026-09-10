@@ -21,7 +21,7 @@ public:
 signals:
     void stopped();
     void newClientConnected(std::size_t id, QHostAddress address);
-    void dataRead(std::size_t clientId, QByteArray data);
+    void dataReceived(std::size_t clientId, QByteArray data);
     void clientDisconnected(std::size_t id);
 
 public slots:
@@ -76,7 +76,7 @@ public slots:
 
         const auto& data = socket->readAll();
         const auto  id   = socketsToIdMap_.at(socket);
-        emit dataRead(id, data);
+        emit dataReceived(id, data);
         //qDebug() << "Received:" << data;
         //socket->write("Hello from server!\n");
     }
@@ -107,7 +107,6 @@ public slots:
 
 private:
     QTcpServer*                                  server_;
-    //std::vector<QTcpSocket*>                     clients_;
     std::unordered_map<std::size_t, QTcpSocket*> idToSocketsMap_;
     std::unordered_map<QTcpSocket*, std::size_t> socketsToIdMap_;
     std::size_t                                  nextSocketId_ = 1;
