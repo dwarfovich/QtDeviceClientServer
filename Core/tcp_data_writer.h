@@ -19,7 +19,7 @@ public:
     void write(const QByteArray& data) override
     {
         socket_->write(data);
-        socket_->write(message::dataEndMarker);
+        socket_->write(device_message::dataEndMarker);
     };
 
     void connectTo(const QHostAddress& address, quint16 port)

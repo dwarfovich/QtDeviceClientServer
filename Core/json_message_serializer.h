@@ -1,9 +1,9 @@
 #pragma once
 
-#include "message_type.h"
+#include "messages.h";
 
-namespace device_message {
-
+#include <QByteArray>
+/*
 struct NetworkMetrics
 {
     static constexpr Type type = Type::NetworkMessage;
@@ -37,5 +37,14 @@ struct Log
     QString message;
     LogMessageSeverity severity = LogMessageSeverity::Info;
 };
+*/
+class JsonMessageSerializer{
+public:
+    QByteArray serialize(const device_message::NetworkMetrics& message){
 
-}
+    }
+
+    QByteArray serialize(const device_message::DeviceStatus& message) {}
+
+    QByteArray serialize(const device_message::Log& message) {}
+};

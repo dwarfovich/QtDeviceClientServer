@@ -18,38 +18,39 @@ public:
     DeviceEmulator(QObject* parent)
         : QObject { parent }
         , communicator_ { new BackendCommunicator { this } }
-        , connectionTimer_ { new QTimer { this } }
+        //, connectionTimer_ { new QTimer { this } }
         , dataTimer_ { new QTimer { this } }
     {
-        writer_ = new TcpDataWriter(this);
-        communicator_->setWriter(writer_);
+        connect(communicator_, &BackendCommunicator::connected, this, &DeviceEmulator::onNetworkConnected);
+        connect(communicator_, &BackendCommunicator::disconnected, this, &DeviceEmulator::onNetworkDisconnected);
 
-        connect(writer_, &TcpDataWriter::networkDisconnected, this, &DeviceEmulator::onNetworkDisconnected);
-        connect(writer_, &TcpDataWriter::networkConnected, this, &DeviceEmulator::onNetworkConnected);
-        connect(writer_, &TcpDataWriter::messageReceived, this, &DeviceEmulator::onBackendMessageReceived);
+        //writer_ = new TcpDataWriter(this);
+        //communicator_->setWriter(writer_);
 
-        connect(this, &DeviceEmulator::stopRequested, writer_, &TcpDataWriter::disconnect);
+        //connect(writer_, &TcpDataWriter::networkDisconnected, this, &DeviceEmulator::onNetworkDisconnected);
+        //connect(writer_, &TcpDataWriter::networkConnected, this, &DeviceEmulator::onNetworkConnected);
+        //connect(writer_, &TcpDataWriter::messageReceived, this, &DeviceEmulator::onBackendMessageReceived);
 
-        connect(connectionTimer_, &QTimer::timeout, this, &DeviceEmulator::tryConnect);
-        connect(dataTimer_, &QTimer::timeout, this, &DeviceEmulator::sendData);
+        //connect(this, &DeviceEmulator::stopRequested, writer_, &TcpDataWriter::disconnect);
 
-        connectionTimer_->setInterval(100);
-        dataTimer_->setInterval(500);
+        //connect(connectionTimer_, &QTimer::timeout, this, &DeviceEmulator::tryConnect);
+        //connect(dataTimer_, &QTimer::timeout, this, &DeviceEmulator::sendData);
+
+        //connectionTimer_->setInterval(100);
+        //dataTimer_->setInterval(500);
     }
 
 public slots:
-    void start()
-    {
-        qDebug() << "start thread:" << QThread::currentThread();
-        qDebug() << "device thread:" << thread();
-        qDebug() << "timer thread:" << connectionTimer_->thread();
-        connectionTimer_->start();
+    void start() { 
+        communicator_->start();
+        //tryConnect();
+        //connectionTimer_->start();
     }
     void stop()
     {
-        connectionTimer_->stop();
-        dataTimer_->stop();
-        emit stopRequested();
+        //connectionTimer_->stop();
+        //dataTimer_->stop();
+        //emit stopRequested();
     }
 
 protected:
@@ -57,16 +58,16 @@ signals:
     void stopRequested();
 
 private slots:
-    void tryConnect() { writer_->connectTo(QHostAddress::LocalHost, 12345); }
+    void onNetworkConnected()
+    {
+       // connectionTimer_->stop();
+        dataTimer_->start(600);
+    }
+    //void tryConnect() { writer_->connectTo(QHostAddress::LocalHost, 12345); }
     void onNetworkDisconnected()
     {
         dataTimer_->stop();
-        connectionTimer_->start();
-    }
-    void onNetworkConnected()
-    {
-        connectionTimer_->stop();
-        dataTimer_->start(600);
+      //  connectionTimer_->start();
     }
     void onBackendMessageReceived(const QByteArray& data) {
         qDebug() << "Client received message: " << data;
@@ -84,8 +85,8 @@ private:
     static constexpr int connectionPeriod_ = 5000;
 
     std::atomic_flag     stopRequested_;
-    QTimer*              connectionTimer_ = nullptr;
+    //QTimer*              connectionTimer_ = nullptr;
     QTimer*              dataTimer_       = nullptr;
-    TcpDataWriter*       writer_          = nullptr;
+    //TcpDataWriter*       writer_          = nullptr;
     BackendCommunicator* communicator_    = nullptr;
 };

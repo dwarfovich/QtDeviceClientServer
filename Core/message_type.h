@@ -4,7 +4,7 @@
 
 #include <cinttypes>
 
-namespace message {
+namespace device_message {
 
 enum class Type : std::uint8_t
 {
@@ -13,12 +13,14 @@ enum class Type : std::uint8_t
     Log
 };
 
-QString toString(Type type)
+inline QString toString(Type type)
 {
     switch (type) {
-        case message::Type::NetworkMessage: return "NetworkMessage";
-        case message::Type::DeviceStatus: return "DeviceStatus";
-        case message::Type::Log: return "Log";
-        default: return "UnknownMessageType";
+        case Type::NetworkMessage: return "NetworkMessage";
+        case Type::DeviceStatus: return "DeviceStatus";
+        case Type::Log: return "Log";
+        default: return "Unknown";
     }
+}
+
 }

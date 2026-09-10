@@ -2,7 +2,7 @@
 
 #include <QByteArray>
 
-namespace message{
+namespace device_message {
 
     inline const QByteArray dataEndMarker = "\r\n\r\n";
 

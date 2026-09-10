@@ -21,6 +21,7 @@ set(PROJECT_SOURCES
     tcp_data_writer.h
     message_type.h
     messages.h
+    json_message_serializer.h
 )
 
 add_library(${PROJECT_NAME} STATIC
