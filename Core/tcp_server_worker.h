@@ -37,10 +37,15 @@ public slots:
     void stop()
     {
         server_->close();
-        for (auto* socket : clients_) {
+        //for (auto* socket : clients_) {
+        //    socket->disconnectFromHost();
+        //}
+        //clients_.clear();
+        for (auto& [id, socket]: idToSocketsMap_){
             socket->disconnectFromHost();
         }
-        clients_.clear();
+        idToSocketsMap_.clear();
+        socketsToIdMap_.clear();
 
         emit stopped();
     }
@@ -76,9 +81,12 @@ public slots:
         //socket->write("Hello from server!\n");
     }
 
-    void write()
+    void write(std::size_t id, const QByteArray& data)
     {
-        // clients_.front()->write
+        auto iter =idToSocketsMap_.find(id);
+        if (iter != idToSocketsMap_.cend()){
+            iter->second->write(data);
+        }
     }
 
     void onDisconnected()
@@ -90,7 +98,6 @@ public slots:
 
         qDebug() << "Client disconnected";
 
-        std::erase(clients_, socket);
         const auto id = socketsToIdMap_.at(socket);
         idToSocketsMap_.erase(id);
         socketsToIdMap_.erase(socket);
@@ -100,7 +107,7 @@ public slots:
 
 private:
     QTcpServer*                                  server_;
-    std::vector<QTcpSocket*>                     clients_;
+    //std::vector<QTcpSocket*>                     clients_;
     std::unordered_map<std::size_t, QTcpSocket*> idToSocketsMap_;
     std::unordered_map<QTcpSocket*, std::size_t> socketsToIdMap_;
     std::size_t                                  nextSocketId_ = 1;

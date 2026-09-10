@@ -1,5 +1,7 @@
 #pragma once
 
+#include "tcp_server_worker.h"
+
 #include <QObject>
 #include <QTcpServer>
 #include <QThread>
@@ -17,6 +19,15 @@ public:
     TcpServer(QObject* parent, const std::shared_ptr<Logger>& logger);
     ~TcpServer() { stop(); }
 
+    void sendMessage(std::size_t clientId, const QByteArray& data){
+        auto* w = worker_;
+        QMetaObject::invokeMethod(
+            w,
+            [w,clientId, data]() {
+                w->write(clientId, data);
+            },
+            Qt::QueuedConnection);
+    }
 public slots:
     void start(quint16 port);
     void stop()

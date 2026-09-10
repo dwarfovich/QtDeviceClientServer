@@ -46,6 +46,7 @@ private slots:
         if (data.endsWith(messageEndMarker)){
             processReceivedMessage(clientId, data);
         }
+        server_.sendMessage(clientId , "Hello from server!" + messageEndMarker);
     }
 
     private: // methods

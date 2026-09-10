@@ -68,7 +68,9 @@ private slots:
         connectionTimer_->stop();
         dataTimer_->start(600);
     }
-    void onBackendMessageReceived() {}
+    void onBackendMessageReceived(const QByteArray& data) {
+        qDebug() << "Client received message: " << data;
+    }
     void sendData()
     {
         communicator_->sendString("Hello from device!");
