@@ -11,6 +11,7 @@ qt_standard_project_setup()
 
 set(PROJECT_SOURCES
     main.cpp
+    device_emulator.h
 )
 
 qt_add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})

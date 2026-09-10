@@ -17,6 +17,7 @@ public:
         : QObject { parent }, logger_ { logger }, server_ { nullptr, logger }
     {
         connect(&server_, &TcpServer::newClientConnected, this, &DeviceServer::onNewClientConnected);
+        connect(&server_, &TcpServer::clientDisconnected, this, &DeviceServer::clientDisconnected);
         connect(&server_, &TcpServer::dataReceived, this, &DeviceServer::onDataReceived);
     }
 
@@ -26,6 +27,7 @@ public slots:
 
 signals:
     void newClientConnected(const DeviceInfo& device);
+    void clientDisconnected(std::size_t id);
 
 private slots:
     void onNewClientConnected(std::size_t id, const QHostAddress& address)

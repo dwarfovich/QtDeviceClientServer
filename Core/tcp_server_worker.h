@@ -22,6 +22,7 @@ signals:
     void stopped();
     void newClientConnected(std::size_t id, QHostAddress address);
     void dataRead(std::size_t clientId, QByteArray data);
+    void clientDisconnected(std::size_t id);
 
 public slots:
     void start(quint16 port)
@@ -94,6 +95,7 @@ public slots:
         idToSocketsMap_.erase(id);
         socketsToIdMap_.erase(socket);
         socket->deleteLater();
+        emit clientDisconnected(id);
     }
 
 private:

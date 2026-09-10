@@ -13,7 +13,9 @@ int main(int argc, char* argv[])
     QTcpSocket       socket;
 
     socket.connectToHost("127.0.0.1", 12345);
-    socket.write("{\"text\": \"Hello from client!\"" + messageEndMarker);
+    //socket.write("{\"text\": \"Hello from client!\"}" + messageEndMarker);
+    socket.write("{\"text\": \"Hello from");
+    socket.write(" client\"}" + messageEndMarker);
 
     return app.exec();
 }
