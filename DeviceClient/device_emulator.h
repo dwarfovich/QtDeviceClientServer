@@ -47,9 +47,9 @@ private slots:
                                                             .packetLoss = randomDouble(0., 100.) });
                 break;
             case 1:
-                communicator_->sendMessage(DeviceStatus { .uptime      = randomInt(0ull, 10ull),
-                                                          .cpuUsage    = randomInt<std::uint8_t>(0, 100),
-                                                          .memoryUsage = randomInt<std::uint8_t>(0, 100) });
+                communicator_->sendMessage(DeviceStatus { .uptime      = randomInt(0, 10),
+                                                          .cpuUsage    = randomInt(0, 100),
+                                                          .memoryUsage = randomInt(0, 100) });
                 break;
             case 2:
                 communicator_->sendMessage(Log { .message = randomText(), .severity = randomLogMessageSeverity() });

@@ -41,11 +41,12 @@ class DeviceServer : public QObject {
    signals:
     void newClientConnected(const DeviceInfo& device);
     void clientDisconnected(std::size_t id);
-
+    void newMessageReceived(std::size_t clientId, const device_message::Message& message);
    private slots:
     void onNewClientConnected(std::size_t id, const QHostAddress& address) {
         DeviceInfo device{id, address, DeviceStatus::Connected};
         emit newClientConnected(device);
+
     }
     // TODO: Clear current message on diconnect;
 
@@ -66,7 +67,9 @@ class DeviceServer : public QObject {
     void processReceivedMessage(std::size_t clientId, const QByteArray& data) {
         qDebug() << "Received message from " + QString::number(clientId) + ": " + data;
         // call handler
+        auto message = jsonDeserializer_.deserialize(data);
         currentMessages_.erase(clientId);
+        emit newMessageReceived(clientId, message);
     }
 
    private:  // data

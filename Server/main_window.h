@@ -43,7 +43,12 @@ public:
         });
 
         //tcpServer_.setNetworkMetricsHandler([](){});
+
+        //onNetworkMetricsReceived
+        connect(&tcpServer_, &DeviceServer::newMessageReceived, this, &MainWindow::processMessage);
         tcpServer_.start();
+
+
     }
 
     ~MainWindow(){
@@ -55,8 +60,8 @@ private slots:
         logger_->logMessage("New client connected, id = " + QString::number(id));
     }
 
-    private: // methods
-        void onNetworkMetricsReceived(std::size_t clientId, const device_message::NetworkMetrics& message){
+        void processMessage(std::size_t clientId, const device_message::Message& message){
+        logger_->logMessage(QString::number(clientId) + ": new message");
         }
 
    private: // data
