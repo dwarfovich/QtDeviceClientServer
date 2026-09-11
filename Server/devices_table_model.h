@@ -1,13 +1,14 @@
 #pragma once
 
-#include <QAbstractTableModel>
-#include <vector>
-
 #include "device_info.h"
+
+#include <QAbstractTableModel>
+
+#include <vector>
 
 class DevicesTableModel : public QAbstractTableModel {
     Q_OBJECT
-   public:
+public:
     DevicesTableModel(QObject* parent = nullptr) : QAbstractTableModel{parent} {
     }
 
@@ -48,8 +49,9 @@ class DevicesTableModel : public QAbstractTableModel {
     }
 
     void setDeviceDisconnected(std::size_t id) {
-        auto iter = std::find_if(
-            devices_.begin(), devices_.end(), [id](const auto& device) { return device.id == id; });
+        auto iter = std::find_if(devices_.begin(), devices_.end(), [id](const auto& device) {
+            return device.id == id;
+        });
         if (iter != devices_.cend()) {
             const auto row = static_cast<int>(std::distance(devices_.begin(), iter));
             iter->status = DeviceStatus::Disconnected;
@@ -60,8 +62,9 @@ class DevicesTableModel : public QAbstractTableModel {
     }
 
     void removeDevice(std::size_t id) {
-        auto iter = std::find_if(
-            devices_.cbegin(), devices_.cend(), [id](const auto& device) { return device.id == id; });
+        auto iter = std::find_if(devices_.cbegin(), devices_.cend(), [id](const auto& device) {
+            return device.id == id;
+        });
         if (iter != devices_.cend()) {
             const auto row = static_cast<int>(std::distance(devices_.cbegin(), iter));
             beginRemoveRows(QModelIndex{}, row, row);
@@ -70,8 +73,13 @@ class DevicesTableModel : public QAbstractTableModel {
         }
     }
 
-   private:
-    enum class Columns { Id, Address, Status, ColumnsCount };
+private:
+    enum class Columns {
+        Id,
+        Address,
+        Status,
+        ColumnsCount
+    };
 
     std::vector<DeviceInfo> devices_;
 };

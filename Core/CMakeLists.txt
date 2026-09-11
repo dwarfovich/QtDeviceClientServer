@@ -8,7 +8,6 @@ qt_standard_project_setup()
 set(PROJECT_SOURCES
     header.h
     logger.h
-    tcp_server.cpp
     tcp_server.h
     tcp_server_worker.h
     message_end_marker.h
@@ -16,6 +15,7 @@ set(PROJECT_SOURCES
     messages.h
     json_message_serializer.h
     json_message_deserializer.h
+    default_network_parameters.h
 )
 
 add_library(${PROJECT_NAME} STATIC

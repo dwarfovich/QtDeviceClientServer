@@ -4,6 +4,7 @@
 #include "Core/message_end_marker.h"
 #include "Core/json_message_serializer.h"
 #include "Core/json_message_deserializer.h"
+#include "Core/default_network_parameters.h"
 
 #include <QTcpSocket>
 #include <QTimer>
@@ -84,7 +85,9 @@ private:
         if (socket_.state() != QAbstractSocket::UnconnectedState) {
             return;
         }
-        socket_.connectToHost(QHostAddress::LocalHost, 12345);
+        using default_network_parameters::serverAddress;
+        using default_network_parameters::serverPort;
+        socket_.connectToHost(serverAddress, serverPort);
     }
 
 private:

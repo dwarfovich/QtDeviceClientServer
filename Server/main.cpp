@@ -1,9 +1,7 @@
 #include "main_window.h"
 
-#include "Core/tcp_server.h"
 #include "Core/logger.h"
 
-#include <QDebug>
 #include <QtWidgets/QApplication>
 
 #include <memory>

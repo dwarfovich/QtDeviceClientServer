@@ -6,5 +6,7 @@ BinPackParameters: false
 PenaltyBreakAssignment: 1000000
 BinPackArguments: false
 AllowAllArgumentsOnNextLine: false
-
 AccessModifierOffset: -4
+IncludeBlocks: Preserve
+SortIncludes: CaseSensitive
+AllowShortEnumsOnASingleLine: false

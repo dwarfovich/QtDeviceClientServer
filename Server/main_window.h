@@ -1,12 +1,14 @@
 #pragma once
 
-#include <QtWidgets/QMainWindow>
-#include <memory>
-
-#include "Core/logger.h"
 #include "device_server.h"
 #include "devices_table_model.h"
 #include "ui_main_window.h"
+
+#include "Core/logger.h"
+
+#include <QtWidgets/QMainWindow>
+
+#include <memory>
 
 class DevicesTableModel;
 
