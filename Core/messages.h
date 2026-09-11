@@ -12,9 +12,17 @@
 
 namespace device_message {
 
-enum class LogMessageSeverity : std::uint8_t { Info, Low, Medium, High, Critical, Unknown };
+enum class LogMessageSeverity : std::uint8_t {
+    Info,
+    Low,
+    Medium,
+    High,
+    Critical,
+    Unknown
+};
 
-inline QString toString(LogMessageSeverity severity) {
+inline QString toString(LogMessageSeverity severity)
+{
     switch (severity) {
         case LogMessageSeverity::Info:
             return "INFO";
@@ -31,7 +39,8 @@ inline QString toString(LogMessageSeverity severity) {
     }
 }
 
-inline LogMessageSeverity toLogMessageSeverity(const QString& str) {
+inline LogMessageSeverity toLogMessageSeverity(const QString& str)
+{
     if (str == QStringLiteral("INFO")) {
         return LogMessageSeverity::Info;
     }
@@ -58,7 +67,7 @@ class NetworkMetrics {
     Q_PROPERTY(double latency MEMBER latency)
     Q_PROPERTY(double packetLoss MEMBER packetLoss)
 
-   public:
+public:
     static constexpr typename device_message::Type type = device_message::Type::NetworkMetrics;
 
     double bandwidth = 0.0;
@@ -73,7 +82,7 @@ class DeviceStatus {
     Q_PROPERTY(int cpuUsage MEMBER cpuUsage)
     Q_PROPERTY(double memoryUsage MEMBER memoryUsage)
 
-   public:
+public:
     static constexpr Type type = Type::DeviceStatus;
 
     int uptime = 0;
@@ -87,7 +96,7 @@ class Log {
     Q_PROPERTY(QString message MEMBER message)
     Q_PROPERTY(LogMessageSeverity severity MEMBER severity)
 
-   public:
+public:
     static constexpr Type type = Type::Log;
 
     QString message;
@@ -101,30 +110,35 @@ struct StartRequest {
 using MessageData = std::variant<NetworkMetrics, DeviceStatus, Log, StartRequest>;
 
 class Message {
-   public:
+public:
     template <typename T>
-    explicit Message(T data) : type_(T::type), data_(std::move(data)) {
+    explicit Message(T data) : type_(T::type), data_(std::move(data))
+    {
     }
 
-    Type type() const {
+    Type type() const
+    {
         return type_;
     }
 
-    const MessageData& data() const {
+    const MessageData& data() const
+    {
         return data_;
     }
 
-    MessageData& data() {
+    MessageData& data()
+    {
         return data_;
     }
 
-   private:
+private:
     Type type_;
     MessageData data_;
 };
 
 template <typename T>
-const T& as(const Message& message) {
+const T& as(const Message& message)
+{
     if (message.type() != T::type) {
         throw std::bad_cast{};
     }
@@ -133,7 +147,8 @@ const T& as(const Message& message) {
 }
 
 template <typename T>
-T& as(Message& message) {
+T& as(Message& message)
+{
     if (message.type() != T::type) {
         throw std::bad_cast{};
     }

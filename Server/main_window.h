@@ -17,7 +17,8 @@ class MainWindow : public QMainWindow {
 
 public:
     MainWindow(const std::shared_ptr<Logger>& logger, QWidget* parent)
-        : QMainWindow{parent}, logger_{logger}, server_{nullptr, logger_}, devicesModel_{new DevicesTableModel{this}} {
+        : QMainWindow{parent}, logger_{logger}, server_{nullptr, logger_}, devicesModel_{new DevicesTableModel{this}}
+    {
         Q_ASSERT(logger);
 
         ui.setupUi(this);
@@ -35,31 +36,37 @@ public:
         logger->logMessage("App started");
     }
 
-    ~MainWindow() {
+    ~MainWindow()
+    {
         server_.stop();
     }
 
 private slots:
-    void onNewLogMessage(const QString& message) {
+    void onNewLogMessage(const QString& message)
+    {
         ui.logTextEdit->appendPlainText(message);
     }
 
-    void onNewClientConnected(const DeviceInfo& device) {
+    void onNewClientConnected(const DeviceInfo& device)
+    {
         logger_->logMessage("New client connected, id = " + QString::number(device.id));
         devicesModel_->addDevice(device);
     }
 
-    void onClientDisconnected(std::size_t id) {
+    void onClientDisconnected(std::size_t id)
+    {
         logger_->logMessage("Client " + QString::number(id) + " disconnected");
         devicesModel_->setDeviceDisconnected(id);
     }
 
-    void processMessage(std::size_t clientId, const device_message::Message& message) {
+    void processMessage(std::size_t clientId, const device_message::Message& message)
+    {
         // logger_->logMessage(QString::number(clientId) + ": new message");
     }
 
 private:  // methods
-    void setupWindowGeometry() {
+    void setupWindowGeometry()
+    {
         QScreen* screen = QGuiApplication::primaryScreen();
         const QRect geometry = screen->availableGeometry();
         const int width = geometry.width() * 0.7;

@@ -1,14 +1,15 @@
 #pragma once
 
 #include <QByteArray>
-#include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonObject>
 
 #include "messages.h"
 
 class JsonMessageDeserializer {
-   public:
-    device_message::Message deserialize(const QByteArray& data) const {
+public:
+    device_message::Message deserialize(const QByteArray& data) const
+    {
         const QJsonDocument document = QJsonDocument::fromJson(data);
 
         if (!document.isObject()) {
@@ -33,9 +34,10 @@ class JsonMessageDeserializer {
         }
     }
 
-   private:
+private:
     template <typename T>
-    T deserializeMessage(const QJsonObject& object) const {
+    T deserializeMessage(const QJsonObject& object) const
+    {
         T message;
         const QMetaObject& metaObject = T::staticMetaObject;
 

@@ -1,19 +1,18 @@
 #pragma once
 
-#include "Core/messages.h"
-#include "Core/message_end_marker.h"
-#include "Core/json_message_serializer.h"
-#include "Core/json_message_deserializer.h"
 #include "Core/default_network_parameters.h"
+#include "Core/json_message_deserializer.h"
+#include "Core/json_message_serializer.h"
+#include "Core/message_end_marker.h"
+#include "Core/messages.h"
 
 #include <QTcpSocket>
 #include <QTimer>
 
-class BackendCommunicator : public QObject
-{
+class BackendCommunicator : public QObject {
     Q_OBJECT
 public:
-    BackendCommunicator(QObject* parent) : QObject { parent }
+    BackendCommunicator(QObject* parent) : QObject{parent}
     {
         connectionTimer_.setInterval(5000);
 
@@ -39,9 +38,12 @@ public:
         }
     }
 
-    void sendString(const QString& text) { socket_.write(text.toUtf8() + device_message::dataEndMarker); }
+    void sendString(const QString& text)
+    {
+        socket_.write(text.toUtf8() + device_message::dataEndMarker);
+    }
 
-    template<typename MessageType>
+    template <typename MessageType>
     void sendMessage(const MessageType& message)
     {
         auto data = jsonSerializer_.serialize(message) + device_message::dataEndMarker;
@@ -91,9 +93,9 @@ private:
     }
 
 private:
-    JsonMessageSerializer   jsonSerializer_;
+    JsonMessageSerializer jsonSerializer_;
     JsonMessageDeserializer jsonDeserializer_;
-    QTimer                  connectionTimer_;
-    QTcpSocket              socket_;
-    QByteArray              currentData_;
+    QTimer connectionTimer_;
+    QTcpSocket socket_;
+    QByteArray currentData_;
 };

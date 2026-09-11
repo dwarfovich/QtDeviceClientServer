@@ -4,7 +4,7 @@
 
 #include <QHostAddress>
 
-struct DeviceInfo{
+struct DeviceInfo {
     std::size_t id = 0;
     QHostAddress address;
     DeviceStatus status;

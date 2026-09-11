@@ -13,7 +13,8 @@ class TcpServer : public QObject {
 
 public:
     TcpServer(QObject* parent, const std::shared_ptr<Logger>& logger)
-        : QObject{parent}, logger_{logger}, worker_{new TcpServerWorker{this, logger}} {
+        : QObject{parent}, logger_{logger}, worker_{new TcpServerWorker{this, logger}}
+    {
         connect(worker_,
                 &TcpServerWorker::newClientConnected,
                 this,
@@ -29,11 +30,13 @@ public:
         connect(&workerThread_, &QThread::finished, worker_, &QObject::deleteLater);
     }
 
-    ~TcpServer() {
+    ~TcpServer()
+    {
         stop();
     }
 
-    void sendMessage(std::size_t clientId, const QByteArray& data) {
+    void sendMessage(std::size_t clientId, const QByteArray& data)
+    {
         auto* worker = worker_;
         QMetaObject::invokeMethod(
             worker,
@@ -42,7 +45,8 @@ public:
     }
 
 public slots:
-    void start(quint16 port) {
+    void start(quint16 port)
+    {
         if (workerThread_.isRunning() || stopPended_) {
             return;
         }
@@ -58,7 +62,8 @@ public slots:
         workerThread_.start();
     }
 
-    void stop() {
+    void stop()
+    {
         Q_ASSERT(QThread::currentThread() != &workerThread_);
 
         if (!workerThread_.isRunning() || stopPended_) {

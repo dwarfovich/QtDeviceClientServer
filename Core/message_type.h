@@ -7,9 +7,16 @@
 
 namespace device_message {
 
-enum class Type : std::uint8_t { NetworkMetrics, DeviceStatus, Log, StartRequest, Unknown };
+enum class Type : std::uint8_t {
+    NetworkMetrics,
+    DeviceStatus,
+    Log,
+    StartRequest,
+    Unknown
+};
 
-inline QString toString(Type type) {
+inline QString toString(Type type)
+{
     switch (type) {
         case Type::NetworkMetrics:
             return "NetworkMetrics";
@@ -24,7 +31,8 @@ inline QString toString(Type type) {
     }
 }
 
-inline Type toMessageType(const QString& str) {
+inline Type toMessageType(const QString& str)
+{
     if (str == QStringLiteral("NetworkMetrics")) {
         return Type::NetworkMetrics;
     } else if (str == QStringLiteral("DeviceStatus")) {

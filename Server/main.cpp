@@ -6,12 +6,12 @@
 
 #include <memory>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
 
     auto logger = std::make_shared<Logger>();
-    MainWindow window {logger, nullptr};
+    MainWindow window{logger, nullptr};
     window.show();
 
     return app.exec();

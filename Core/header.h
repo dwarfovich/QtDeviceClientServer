@@ -1,5 +1,6 @@
 #pragma once
 
-inline int func(){
+inline int func()
+{
     return 8;
 }

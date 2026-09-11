@@ -15,12 +15,14 @@ class TcpServerWorker : public QObject {
 
 public:
     TcpServerWorker(QObject* parent, const std::shared_ptr<Logger>& logger)
-        : QObject{parent}, server_{new QTcpServer{this}}, logger_{logger}, abortTimer_{new QTimer{this}} {
+        : QObject{parent}, server_{new QTcpServer{this}}, logger_{logger}, abortTimer_{new QTimer{this}}
+    {
         connect(server_, &QTcpServer::newConnection, this, &TcpServerWorker::onNewConnection);
     }
 
 public slots:
-    void start(quint16 port) {
+    void start(quint16 port)
+    {
         assertWorkerThread();
 
         if (stopPended_) {
@@ -35,7 +37,8 @@ public slots:
         logger_->logMessage(QString("Server started on port %1").arg(port));
     }
 
-    void stop() {
+    void stop()
+    {
         assertWorkerThread();
 
         if (stopPended_) {
@@ -51,7 +54,8 @@ public slots:
         checkStopStatus();
     }
 
-    void write(std::size_t id, const QByteArray& data) {
+    void write(std::size_t id, const QByteArray& data)
+    {
         assertWorkerThread();
 
         auto iter = idToSocketsMap_.find(id);
@@ -69,7 +73,8 @@ signals:
     void dataReceived(std::size_t clientId, QByteArray data);
 
 private slots:
-    void onNewConnection() {
+    void onNewConnection()
+    {
         while (server_->hasPendingConnections() && !stopPended_) {
             QTcpSocket* socket = server_->nextPendingConnection();
             if (nextSocketId_ == std::numeric_limits<std::size_t>::max()) {
@@ -89,7 +94,8 @@ private slots:
         }
     }
 
-    void onReadyRead() {
+    void onReadyRead()
+    {
         auto* socket = qobject_cast<QTcpSocket*>(sender());
         if (!socket) {
             return;
@@ -97,7 +103,7 @@ private slots:
 
         const auto& data = socket->readAll();
         auto iter = socketsToIdMap_.find(socket);
-        if (iter != socketsToIdMap_.cend()){
+        if (iter != socketsToIdMap_.cend()) {
             const auto id = iter->second;
             emit dataReceived(id, data);
         } else {
@@ -105,14 +111,15 @@ private slots:
         }
     }
 
-    void onDisconnected() {
+    void onDisconnected()
+    {
         auto* socket = qobject_cast<QTcpSocket*>(sender());
         if (!socket) {
             return;
         }
 
         auto iter = socketsToIdMap_.find(socket);
-        if (iter == socketsToIdMap_.cend()){
+        if (iter == socketsToIdMap_.cend()) {
             Q_ASSERT(false);
             return;
         }
@@ -126,11 +133,13 @@ private slots:
     }
 
 private:  // methods
-    void assertWorkerThread() const {
+    void assertWorkerThread() const
+    {
         Q_ASSERT(QThread::currentThread() == thread());
     }
 
-    void checkStopStatus() {
+    void checkStopStatus()
+    {
         if (!stopPended_) {
             return;
         }

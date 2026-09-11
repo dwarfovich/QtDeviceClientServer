@@ -4,6 +4,6 @@
 
 namespace device_message {
 
-    inline const QByteArray dataEndMarker = "\r\n\r\n";
+inline const QByteArray dataEndMarker = "\r\n\r\n";
 
 }

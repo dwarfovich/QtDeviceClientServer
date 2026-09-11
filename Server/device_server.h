@@ -16,7 +16,8 @@ class DeviceServer : public QObject {
     Q_OBJECT
 public:
     DeviceServer(QObject* parent, const std::shared_ptr<Logger>& logger)
-        : QObject{parent}, logger_{logger}, server_{nullptr, logger} {
+        : QObject{parent}, logger_{logger}, server_{nullptr, logger}
+    {
         Q_ASSERT(logger);
 
         connect(&server_, &TcpServer::newClientConnected, this, &DeviceServer::onNewClientConnected);
@@ -26,11 +27,13 @@ public:
     }
 
 public slots:
-    void start() {
+    void start()
+    {
         server_.start(default_network_parameters::serverPort);
     }
 
-    void stop() {
+    void stop()
+    {
         server_.stop();
     }
 
@@ -40,18 +43,21 @@ signals:
     void newMessageReceived(std::size_t clientId, const device_message::Message& message);
 
 private slots:
-    void onNewClientConnected(std::size_t id, const QHostAddress& address) {
+    void onNewClientConnected(std::size_t id, const QHostAddress& address)
+    {
         DeviceInfo device{id, address, DeviceStatus::Connected};
         server_.sendMessage(id,
                             jsonSerializer_.serialize(device_message::StartRequest{}) + device_message::dataEndMarker);
         emit newClientConnected(device);
     }
-    
-    void onClientDisconnected(std::size_t id){
+
+    void onClientDisconnected(std::size_t id)
+    {
         currentMessages_.erase(id);
     }
 
-    void onDataReceived(std::size_t clientId, const QByteArray& newData) {
+    void onDataReceived(std::size_t clientId, const QByteArray& newData)
+    {
         auto [iter, inserted] = currentMessages_.try_emplace(clientId, newData);
         if (!inserted) {
             iter->second += newData;
@@ -63,7 +69,8 @@ private slots:
     }
 
 private:  // methods
-    void processReceivedMessage(std::size_t clientId, const QByteArray& data) {
+    void processReceivedMessage(std::size_t clientId, const QByteArray& data)
+    {
         const auto& message = jsonDeserializer_.deserialize(data);
         currentMessages_.erase(clientId);
         emit newMessageReceived(clientId, message);

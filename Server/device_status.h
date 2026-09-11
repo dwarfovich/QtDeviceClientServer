@@ -2,8 +2,7 @@
 
 #include <cinttypes>
 
-enum class DeviceStatus : std::uint8_t
-{
+enum class DeviceStatus : std::uint8_t {
     Connected,
     Disconnected
 };

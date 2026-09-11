@@ -1,7 +1,6 @@
 BasedOnStyle: Google
 IndentWidth: 4
 ColumnLimit: 120
-AllowShortFunctionsOnASingleLine: None
 BinPackParameters: false
 PenaltyBreakAssignment: 1000000
 BinPackArguments: false
@@ -10,3 +9,11 @@ AccessModifierOffset: -4
 IncludeBlocks: Preserve
 SortIncludes: CaseSensitive
 AllowShortEnumsOnASingleLine: false
+
+#BreakBeforeBraces: Attach
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+
+AllowShortFunctionsOnASingleLine: Empty
+#AllowShortFunctionsOnASingleLine: None

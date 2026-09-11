@@ -14,7 +14,8 @@ inline const auto largeMessage = QStringLiteral(
     "secret message type and password. However, be careful — you can easily get completely lost here.");
 }  // namespace texts
 
-inline QString generateText(int lengthCode) {
+inline QString generateText(int lengthCode)
+{
     switch (lengthCode) {
         case 0:
             return texts::shortMessage;
@@ -22,6 +23,7 @@ inline QString generateText(int lengthCode) {
             return texts::mediumMessage;
         case 2:
             return texts::largeMessage;
-        default: return "An ironic message";
+        default:
+            return "An ironic message";
     }
 }
