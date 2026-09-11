@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "main_window.h"
 
 #include "Core/tcp_server.h"
@@ -14,7 +13,6 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     auto logger = std::make_shared<Logger>();
-    logger->logMessage("App started");
     MainWindow window {logger, nullptr};
     window.show();
 

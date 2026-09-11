@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Core/json_message_deserializer.h"
+#include "Core/json_message_serializer.h"
 #include "Core/logger.h"
 #include "Core/message_end_marker.h"
 #include "Core/tcp_server.h"
@@ -13,10 +14,10 @@ class DeviceServer : public QObject {
     Q_OBJECT
    public:
     DeviceServer(QObject* parent, const std::shared_ptr<Logger>& logger)
-        : QObject{parent}, logger_{logger}, tcpServer_{nullptr, logger} {
-        connect(&tcpServer_, &TcpServer::newClientConnected, this, &DeviceServer::onNewClientConnected);
-        connect(&tcpServer_, &TcpServer::clientDisconnected, this, &DeviceServer::clientDisconnected);
-        connect(&tcpServer_, &TcpServer::dataReceived, this, &DeviceServer::onDataReceived);
+        : QObject{parent}, logger_{logger}, server_{nullptr, logger} {
+        connect(&server_, &TcpServer::newClientConnected, this, &DeviceServer::onNewClientConnected);
+        connect(&server_, &TcpServer::clientDisconnected, this, &DeviceServer::clientDisconnected);
+        connect(&server_, &TcpServer::dataReceived, this, &DeviceServer::onDataReceived);
     }
 
     //void setNetworkMetricsHandler(
@@ -32,10 +33,10 @@ class DeviceServer : public QObject {
 
    public slots:
     void start() {
-        tcpServer_.start(defaultPort_);
+        server_.start(defaultPort_);
     }
     void stop() {
-        tcpServer_.stop();
+        server_.stop();
     }
 
    signals:
@@ -45,8 +46,8 @@ class DeviceServer : public QObject {
    private slots:
     void onNewClientConnected(std::size_t id, const QHostAddress& address) {
         DeviceInfo device{id, address, DeviceStatus::Connected};
+        server_.sendMessage(id, jsonSerializer_.serialize(device_message::StartRequest{}) + device_message::dataEndMarker);
         emit newClientConnected(device);
-
     }
     // TODO: Clear current message on diconnect;
 
@@ -59,8 +60,8 @@ class DeviceServer : public QObject {
         if (data.endsWith(device_message::dataEndMarker)) {
             processReceivedMessage(clientId, data);
         }
-        // tcpServer_.sendMessage(clientId, "Hello from server!" + device_message::dataEndMarker);
-        tcpServer_.sendMessage(clientId, "{\"type\":\"start_request\"}" + device_message::dataEndMarker);
+        // server_.sendMessage(clientId, "Hello from server!" + device_message::dataEndMarker);
+        //server_.sendMessage(clientId, "{\"type\":\"start_request\"}" + device_message::dataEndMarker);
     }
 
    private:  // methods
@@ -74,12 +75,9 @@ class DeviceServer : public QObject {
 
    private:  // data
     std::shared_ptr<Logger> logger_ = nullptr;
-    TcpServer tcpServer_;
+    TcpServer server_;
     const quint16 defaultPort_ = 12345;
     std::unordered_map<std::size_t, QByteArray> currentMessages_;
     JsonMessageDeserializer jsonDeserializer_;
-    //std::function<void(std::size_t clientId, const device_message::StartRequest&)> startRequestHandler_;
-    //std::function<void(std::size_t clientId, const device_message::NetworkMetrics&)> networkMetricsHandler_;
-    //std::function<void(std::size_t clientId, const device_message::DeviceStatus&)> deviceStatusHandler_;
-    //std::function<void(std::size_t clientId, const device_message::Log&)> logHandler_;
+    JsonMessageSerializer jsonSerializer_;
 };

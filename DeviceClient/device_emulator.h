@@ -2,6 +2,7 @@
 
 #include "backend_communicator.h"
 #include "device_emulator_settings.h"
+#include "text_generator.h"
 
 #include <QTimer>
 #include <QRandomGenerator>
@@ -15,13 +16,10 @@ class DeviceEmulator : public QObject
 public:
     DeviceEmulator(QObject* parent) : QObject { parent }, communicator_ { new BackendCommunicator { this } }
     {
-        // connect(communicator_, &BackendCommunicator::connected, this, &DeviceEmulator::onNetworkConnected);
+        //connect(communicator_, &BackendCommunicator::connected, this, &DeviceEmulator::onNetworkConnected);
         connect(communicator_, &BackendCommunicator::disconnected, this, &DeviceEmulator::onNetworkDisconnected);
+        connect(communicator_, &BackendCommunicator::newMessageReceived, this, &DeviceEmulator::processMessage);
         connect(&dataTimer_, &QTimer::timeout, this, &DeviceEmulator::onDataTimerTimeout);
-
-        communicator_->setStartRequestHandler([this](const device_message::StartRequest& message) {
-            onStartRequested(message);
-        });
     }
 
 public slots:
@@ -33,6 +31,15 @@ public slots:
     }
 
 private slots:
+    void processMessage(const device_message::Message& message){
+        if (message.type() == device_message::Type::StartRequest){
+            dataTimer_.start(randomDouble2Precision(settings_.minDataSendingPeriod, settings_.maxDataSendingPeriod));
+            qDebug() << "Received StartRequest message, starting device emulation";
+        } else {
+            qDebug() << "Received unsupported message of type: " << device_message::toString(message.type());
+        }
+    }
+
     void onNetworkDisconnected() { dataTimer_.stop(); }
 
     void onDataTimerTimeout() { sendRandomData(); }
@@ -42,9 +49,9 @@ private slots:
         using namespace device_message;
         switch (randomGenerator_.bounded(3)) {
             case 0:
-                communicator_->sendMessage(NetworkMetrics { .bandwidth  = randomDouble(0., 1000.),
-                                                            .latency    = randomDouble(0., 1000.),
-                                                            .packetLoss = randomDouble(0., 100.) });
+                communicator_->sendMessage(NetworkMetrics { .bandwidth  = randomDouble2Precision(0., 1000.),
+                                                            .latency    = randomDouble2Precision(0., 1000.),
+                                                            .packetLoss = randomDouble2Precision(0., 100.) });
                 break;
             case 1:
                 communicator_->sendMessage(DeviceStatus { .uptime      = randomInt(0, 10),
@@ -59,16 +66,11 @@ private slots:
     }
 
 private:
-    void onStartRequested(const device_message::StartRequest& message)
-    {
-        dataTimer_.start(randomDouble(settings_.minDataSendingPeriod, settings_.maxDataSendingPeriod));
-    }
-
-    double randomDouble(double min, double max)
+    double randomDouble2Precision(double min, double max)
     {
         Q_ASSERT(min < max);
-
-        return min + randomGenerator_.generateDouble() * (max - min);
+     
+        return std::round((min + randomGenerator_.generateDouble() * (max - min)) * 100.0) / 100.0;
     }
 
     template<typename T>
@@ -79,7 +81,9 @@ private:
         return randomGenerator_.bounded(min, max);
     }
 
-    QString randomText() { return {}; }
+    QString randomText() { 
+        return generateText(randomInt(0, 3));
+    }
 
     device_message::LogMessageSeverity randomLogMessageSeverity() { return {}; }
 

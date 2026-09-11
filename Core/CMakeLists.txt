@@ -12,8 +12,6 @@ set(PROJECT_SOURCES
     tcp_server.h
     tcp_server_worker.h
     message_end_marker.h
-    i_data_writer.h 
-    tcp_data_writer.h
     message_type.h
     messages.h
     json_message_serializer.h

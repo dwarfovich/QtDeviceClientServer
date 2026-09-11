@@ -44,15 +44,12 @@ public:
     void sendMessage(const MessageType& message)
     {
         auto data = jsonSerializer_.serialize(message) + device_message::dataEndMarker;
+        qDebug() << "Sending message: " << data;
         socket_.write(data);
     }
 
-    void setStartRequestHandler(std::function<void(const device_message::StartRequest&)> handler)
-    {
-        jsonDeserializer_.setStartRequestHandler(std::move(handler));
-    }
-
 signals:
+    void newMessageReceived(const device_message::Message& message);
     void disconnected();
     void connected();
 
@@ -60,6 +57,7 @@ private slots:
     void onDisconnected()
     {
         connectionTimer_.start();
+        qDebug() << "Device disconnected, trying to reconnect";
         emit disconnected();
     }
 
@@ -74,7 +72,8 @@ private slots:
         currentData_ += socket_.readAll();
         if (currentData_.endsWith(device_message::dataEndMarker)) {
             currentData_.resize(currentData_.length() - device_message::dataEndMarker.length());
-            jsonDeserializer_.deserialize(currentData_);
+            const auto& message = jsonDeserializer_.deserialize(currentData_);
+            emit newMessageReceived(message);
             currentData_.clear();
         }
     }
