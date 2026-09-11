@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
 
     auto logger = std::make_shared<Logger>();
     logger->logMessage("App started");
-
-    MainWindow window {logger};
+    MainWindow window {logger, nullptr};
     window.show();
+
     return app.exec();
 }

@@ -13,9 +13,9 @@ class TcpServerWorker : public QObject
 
 public:
     TcpServerWorker(QObject* parent, const std::shared_ptr<Logger>& logger)
-        : QObject { parent }, server_ { new QTcpServer { this } }, logger_ { logger }
+        : QObject { parent }, tcpServer_ { new QTcpServer { this } }, logger_ { logger }
     {
-        connect(server_, &QTcpServer::newConnection, this, &TcpServerWorker::onNewConnection);
+        connect(tcpServer_, &QTcpServer::newConnection, this, &TcpServerWorker::onNewConnection);
     }
 
 signals:
@@ -27,8 +27,8 @@ signals:
 public slots:
     void start(quint16 port)
     {
-        if (!server_->listen(QHostAddress::Any, port)) {
-            logger_->logMessage(QString("Failed to start server: %1").arg(server_->errorString()));
+        if (!tcpServer_->listen(QHostAddress::Any, port)) {
+            logger_->logMessage(QString("Failed to start server: %1").arg(tcpServer_->errorString()));
             return;
         }
 
@@ -36,7 +36,7 @@ public slots:
     }
     void stop()
     {
-        server_->close();
+        tcpServer_->close();
         //for (auto* socket : clients_) {
         //    socket->disconnectFromHost();
         //}
@@ -52,8 +52,8 @@ public slots:
 
     void onNewConnection()
     {
-        while (server_->hasPendingConnections()) {
-            QTcpSocket* socket = server_->nextPendingConnection();
+        while (tcpServer_->hasPendingConnections()) {
+            QTcpSocket* socket = tcpServer_->nextPendingConnection();
             if (nextSocketId_ == std::numeric_limits<std::size_t>::max()) {
                 socket->disconnectFromHost();
             } else {
@@ -106,7 +106,7 @@ public slots:
     }
 
 private:
-    QTcpServer*                                  server_;
+    QTcpServer*                                  tcpServer_;
     std::unordered_map<std::size_t, QTcpSocket*> idToSocketsMap_;
     std::unordered_map<QTcpSocket*, std::size_t> socketsToIdMap_;
     std::size_t                                  nextSocketId_ = 1;

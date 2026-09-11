@@ -1,0 +1,9 @@
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 120
+AllowShortFunctionsOnASingleLine: None
+BinPackParameters: false
+PenaltyBreakAssignment: 1000000
+BinPackArguments: false
+AllowAllArgumentsOnNextLine: false
+
