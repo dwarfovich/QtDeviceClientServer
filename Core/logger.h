@@ -1,5 +1,7 @@
 #pragma once
 
+#include "log_entry.h"
+
 #include <QObject>
 #include <QString>
 
@@ -10,13 +12,15 @@ class Logger : public QObject {
     Q_OBJECT
 
 public:
-    void logMessage(const QString& message)
+
+
+    void logMessage(const QString& message, std::size_t source = LogEntry::systemId, LogMessageSeverity severity = LogMessageSeverity::Info)
     {
         bool removedOldest = false;
         {
             std::lock_guard lock{mutex_};
 
-            log_.push_back(message);
+            log_.emplace_back(message, QDateTime::currentDateTimeUtc(), source, severity);
 
             if (log_.size() > maxLogLength_) {
                 log_.pop_front();
@@ -24,7 +28,7 @@ public:
             }
         }
 
-        emit messageAdded(message, removedOldest);
+        emit messageAdded(removedOldest);
     }
 
     std::size_t size() const
@@ -33,17 +37,17 @@ public:
         return log_.size();
     }
 
-    QString message(std::size_t index) const
+    LogEntry logEntry(std::size_t index) const
     {
         std::lock_guard lock{mutex_};
         return log_.at(index);
     }
 
 signals:
-    void messageAdded(const QString& message, bool removedOldest);
+    void messageAdded(bool removedOldest);
 
 private:
     mutable std::mutex mutex_;
     std::size_t maxLogLength_ = 10'000;
-    std::deque<QString> log_;
+    std::deque<LogEntry> log_;
 };

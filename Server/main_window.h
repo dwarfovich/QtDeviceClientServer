@@ -30,7 +30,7 @@ public:
     {
         Q_ASSERT(logger);
 
-        connect(logger_.get(), &Logger::messageAdded, this, &MainWindow::onNewLogMessage);
+        //connect(logger_.get(), &Logger::messageAdded, this, &MainWindow::onNewLogMessage);
 
         auto* centralWidget = new QWidget{this};
         setCentralWidget(centralWidget);
@@ -94,14 +94,17 @@ public:
         dataTable_->setModel(serverController_.dataModel());
         mainLayout->addWidget(dataTable_);
 
-        //logText = new QPlainTextEdit{centralWidget};
-        //logText->setReadOnly(true);
         logView_ = new QListView;
         logModel_ = new LogModel{logger_};
-        connect(logModel_, &QAbstractItemModel::rowsInserted, this, [this] { logView_->scrollToBottom(); });
+        connect(logModel_, &QAbstractItemModel::rowsInserted, this, [this] {
+            QTimer::singleShot(0, this, [this] { logView_->scrollToBottom(); });
+        });
 
         logView_->setModel(logModel_);
         mainLayout->addWidget(logView_);
+        QFont font{"Consolas"};
+        font.setStyleHint(QFont::Monospace);
+        logView_->setFont(font);
 
         connect(devicesTable_->selectionModel(),
                 &QItemSelectionModel::selectionChanged,

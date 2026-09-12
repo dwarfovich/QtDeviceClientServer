@@ -58,7 +58,9 @@ private:
             }
 
             auto value = object.value(jsonName).toVariant();
-            if (!value.convert(property.metaType())) {
+            if (property.name() == QByteArray{"severity"}) {
+                value = QVariant::fromValue(static_cast<LogMessageSeverity>(value.toInt()));
+            } else if (!value.convert(property.metaType())) {
                 continue;
             }
 

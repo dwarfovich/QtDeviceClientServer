@@ -137,9 +137,10 @@ private:
         return generateText(randomInt(0, 3));
     }
 
-    device_message::LogMessageSeverity randomLogMessageSeverity()
+    LogMessageSeverity randomLogMessageSeverity()
     {
-        return {};
+        auto number = randomInt(0, static_cast<int>(LogMessageSeverity::Unknown));
+        return LogMessageSeverity(number);
     }
 
 private:

@@ -7,6 +7,8 @@ qt_standard_project_setup()
 
 set(PROJECT_SOURCES
     logger.h
+    log_message_severity.h
+    log_entry.h
     tcp_server.h
     tcp_server_worker.h
     message_end_marker.h

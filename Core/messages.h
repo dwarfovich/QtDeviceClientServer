@@ -8,58 +8,38 @@
 #include <unordered_map>
 #include <variant>
 
-#include "message_type.h"
 #include "device_commands.h"
+#include "log_message_severity.h"
+#include "message_type.h"
 
 namespace device_message {
 
-enum class LogMessageSeverity : std::uint8_t {
-    Info,
-    Low,
-    Medium,
-    High,
-    Critical,
-    Unknown
-};
+// enum class LogMessageSeverity : std::uint8_t {
+//     Info,
+//     Low,
+//     Medium,
+//     High,
+//     Critical,
+//     Unknown
+// };
 
-inline QString toString(LogMessageSeverity severity)
-{
-    switch (severity) {
-        case LogMessageSeverity::Info:
-            return "INFO";
-        case LogMessageSeverity::Low:
-            return "LOW";
-        case LogMessageSeverity::Medium:
-            return "MEDIUM";
-        case LogMessageSeverity::High:
-            return "HIGH";
-        case LogMessageSeverity::Critical:
-            return "CRITICAL";
-        default:
-            return "UNKNOWN";
-    }
-}
-
-inline LogMessageSeverity toLogMessageSeverity(const QString& str)
-{
-    if (str == QStringLiteral("INFO")) {
-        return LogMessageSeverity::Info;
-    }
-    if (str == QStringLiteral("LOW")) {
-        return LogMessageSeverity::Low;
-    }
-    if (str == QStringLiteral("MEDIUM")) {
-        return LogMessageSeverity::Medium;
-    }
-    if (str == QStringLiteral("HIGH")) {
-        return LogMessageSeverity::High;
-    }
-    if (str == QStringLiteral("CRITICAL")) {
-        return LogMessageSeverity::Critical;
-    }
-
-    return LogMessageSeverity::Unknown;
-}
+// inline QString toString(::LogMessageSeverity severity)
+//{
+//     switch (severity) {
+//         case LogMessageSeverity::Info:
+//             return "INFO";
+//         case LogMessageSeverity::Low:
+//             return "LOW";
+//         case LogMessageSeverity::Medium:
+//             return "MEDIUM";
+//         case LogMessageSeverity::High:
+//             return "HIGH";
+//         case LogMessageSeverity::Critical:
+//             return "CRITICAL";
+//         default:
+//             return "UNKNOWN";
+//     }
+// }
 
 class NetworkMetrics {
     Q_GADGET
@@ -115,7 +95,7 @@ struct StartRequest {
 class DeviceCommandMessage {
     Q_GADGET
 
-        Q_PROPERTY(DeviceCommands command MEMBER command)
+    Q_PROPERTY(DeviceCommands command MEMBER command)
     Q_PROPERTY(QVariant parameter MEMBER parameter)
 
 public:

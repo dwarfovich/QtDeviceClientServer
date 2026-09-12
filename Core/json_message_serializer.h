@@ -42,7 +42,7 @@ public:
     {
         QJsonObject json = {{"type", device_message::toString(message.type)},
                             {"message", message.message},
-                            {"severity", device_message::toString(message.severity)}};
+                            {"severity", static_cast<std::underlying_type_t<LogMessageSeverity>>(message.severity)}};
 
         QJsonDocument document{json};
 
