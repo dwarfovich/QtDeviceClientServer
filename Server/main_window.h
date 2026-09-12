@@ -44,8 +44,9 @@ public:
         devicesTable_ = new QTableView{centralWidget};
         devicesTable_->setModel(serverController_.devicesModel());
         mainLayout->addWidget(devicesTable_);
-        statusTable_ = new QTableView{centralWidget};
-        mainLayout->addWidget(statusTable_);
+        dataTable_ = new QTableView{centralWidget};
+        dataTable_->setModel(serverController_.dataModel());
+        mainLayout->addWidget(dataTable_);
         logText = new QPlainTextEdit{centralWidget};
         logText->setReadOnly(true);
         mainLayout->addWidget(logText);
@@ -73,6 +74,6 @@ private:  // data
     std::shared_ptr<Logger> logger_ = nullptr;
     DeviceServerController serverController_;
     QTableView* devicesTable_ = nullptr;
-    QTableView* statusTable_ = nullptr;
+    QTableView* dataTable_ = nullptr;
     QPlainTextEdit* logText = nullptr;
 };

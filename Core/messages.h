@@ -87,7 +87,7 @@ public:
 
     int uptime = 0;
     int cpuUsage = 0;
-    int memoryUsage = 0;
+    double memoryUsage = 0.0;
 };
 
 class Log {

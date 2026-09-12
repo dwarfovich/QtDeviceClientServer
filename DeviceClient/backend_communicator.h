@@ -14,9 +14,10 @@ class BackendCommunicator : public QObject {
 public:
     BackendCommunicator(QObject* parent) : QObject{parent}
     {
-        connectionTimer_.setInterval(5000);
+        connectionTimer_.setInterval(default_network_parameters::reconnectionPeriod);
 
-        connect(&connectionTimer_, &QTimer::timeout, this, &BackendCommunicator::onDisconnected);
+        connect(&socket_, &QTcpSocket::disconnected, this, &BackendCommunicator::onDisconnected);
+        connect(&connectionTimer_, &QTimer::timeout, this, &BackendCommunicator::onConnectionPeriodTimeout);
         connect(&socket_, &QTcpSocket::connected, this, &BackendCommunicator::onConnected);
         connect(&socket_, &QTcpSocket::readyRead, this, &BackendCommunicator::onDataReceived);
     }
@@ -67,6 +68,7 @@ private slots:
     void onConnected()
     {
         connectionTimer_.stop();
+        qDebug() << "Device connected";
         emit connected();
     }
 
@@ -81,14 +83,26 @@ private slots:
         }
     }
 
+    void onConnectionPeriodTimeout()
+    {
+        connectSocket();
+    }
+
 private:
     void connectSocket()
     {
         if (socket_.state() != QAbstractSocket::UnconnectedState) {
+            if (socket_.state() != QAbstractSocket::ConnectingState){
+            qDebug() << "Connection state is still not valid, skipping reconnection attempt. current state: "
+                     << socket_.state(); 
+            } else {
+                qDebug() << "Still trying to connect";
+            }
             return;
         }
         using default_network_parameters::serverAddress;
         using default_network_parameters::serverPort;
+        qDebug() << "Trying to connect to " << serverAddress << ":" << serverPort;
         socket_.connectToHost(serverAddress, serverPort);
     }
 

@@ -151,11 +151,12 @@ private:  // methods
         }
 
         if (!abortTimer_->isActive()) {
-            abortTimer_->singleShot(socketsAbortTimeout_, [this]() {
+            QTimer::singleShot(socketsAbortTimeout_, this, [this]() {
                 for (auto& [id, socket] : idToSocketsMap_) {
                     socket->disconnect(this);
                     socket->abort();
                 }
+
                 idToSocketsMap_.clear();
                 socketsToIdMap_.clear();
 
