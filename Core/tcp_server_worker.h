@@ -47,7 +47,13 @@ public slots:
 
         stopPended_ = true;
         server_->close();
-        for (auto& [id, socket] : idToSocketsMap_) {
+
+        std::vector<QTcpSocket*> socketsBackup;
+        socketsBackup.reserve(idToSocketsMap_.size());
+        for (const auto& [_, socket] : idToSocketsMap_) {
+            socketsBackup.push_back(socket);
+        }
+        for (auto* socket : socketsBackup) {
             socket->disconnectFromHost();
         }
 
@@ -127,6 +133,7 @@ private slots:
         idToSocketsMap_.erase(id);
         socketsToIdMap_.erase(socket);
         socket->deleteLater();
+        socket->disconnect(this);
         emit clientDisconnected(id);
 
         checkStopStatus();
