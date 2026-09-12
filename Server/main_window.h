@@ -1,17 +1,21 @@
 #pragma once
 
 #include "device_server_controller.h"
+#include "logger_model.h"
 
 #include "Core/logger.h"
 
 #include <QGroupbox>
 #include <QLineEdit>
 #include <QMainWindow>
-#include <QPlainTextEdit>
+#include <QGuiApplication>
+//#include <QPlainTextEdit>
+#include <QScreen>
 #include <QPushButton>
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QCheckBox>
+#include <QListView>
 
 #include <memory>
 
@@ -90,9 +94,14 @@ public:
         dataTable_->setModel(serverController_.dataModel());
         mainLayout->addWidget(dataTable_);
 
-        logText = new QPlainTextEdit{centralWidget};
-        logText->setReadOnly(true);
-        mainLayout->addWidget(logText);
+        //logText = new QPlainTextEdit{centralWidget};
+        //logText->setReadOnly(true);
+        logView_ = new QListView;
+        logModel_ = new LogModel{logger_};
+        connect(logModel_, &QAbstractItemModel::rowsInserted, this, [this] { logView_->scrollToBottom(); });
+
+        logView_->setModel(logModel_);
+        mainLayout->addWidget(logView_);
 
         connect(devicesTable_->selectionModel(),
                 &QItemSelectionModel::selectionChanged,
@@ -109,7 +118,7 @@ public:
 private slots:
     void onNewLogMessage(const QString& message)
     {
-        logText->appendPlainText(message);
+        //logText->appendPlainText(message);
     }
 
     void onDeviceSelected(const QItemSelection& selected, const QItemSelection&)
@@ -187,10 +196,12 @@ private:  // data
     DeviceServerController serverController_;
     QTableView* devicesTable_ = nullptr;
     QTableView* dataTable_ = nullptr;
-    QPlainTextEdit* logText = nullptr;
+    //QPlainTextEdit* logText = nullptr;
     QGroupBox* controlBox_ = nullptr;
     QCheckBox* signalLampCheckBox = nullptr;
     QPushButton* startDeviceButton = nullptr;
     QPushButton* stopDeviceButton = nullptr;
+    QListView* logView_ = nullptr;
+    LogModel* logModel_ = nullptr;
     std::size_t selectedDeviceId_ = 0;
 };
