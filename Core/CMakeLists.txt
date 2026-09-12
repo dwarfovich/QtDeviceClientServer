@@ -6,7 +6,6 @@ find_package(Qt6 REQUIRED COMPONENTS Core Network)
 qt_standard_project_setup()
 
 set(PROJECT_SOURCES
-    header.h
     logger.h
     tcp_server.h
     tcp_server_worker.h
