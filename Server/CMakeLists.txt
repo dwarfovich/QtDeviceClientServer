@@ -6,12 +6,12 @@ qt_standard_project_setup()
 
 set(PROJECT_SOURCES
     main.cpp
-    main_window.ui
     main_window.h
     device_server.h
     device_info.h
     device_status.h
     devices_table_model.h
+    device_server_controller.h
 )
 
 qt_add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})

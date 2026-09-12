@@ -1,12 +1,15 @@
 #pragma once
 
-#include "device_server.h"
-#include "devices_table_model.h"
-#include "ui_main_window.h"
+#include "device_server_controller.h"
 
 #include "Core/logger.h"
 
-#include <QtWidgets/QMainWindow>
+#include <QLineEdit>
+#include <QMainWindow>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QTableView>
+#include <QVBoxLayout>
 
 #include <memory>
 
@@ -17,58 +20,49 @@ class MainWindow : public QMainWindow {
 
 public:
     MainWindow(const std::shared_ptr<Logger>& logger, QWidget* parent)
-        : QMainWindow{parent}, logger_{logger}, server_{nullptr, logger_}, devicesModel_{new DevicesTableModel{this}}
+        : QMainWindow{parent}, logger_{logger}, serverController_{this, logger}
     {
         Q_ASSERT(logger);
 
-        ui.setupUi(this);
-        setupWindowGeometry();
-
-        ui.clientsTableView->setModel(devicesModel_);
-
-        ui.logTextEdit->setReadOnly(true);
         connect(logger_.get(), &Logger::messageAdded, this, &MainWindow::onNewLogMessage);
-        connect(&server_, &DeviceServer::newClientConnected, this, &MainWindow::onNewClientConnected);
-        connect(&server_, &DeviceServer::clientDisconnected, this, &MainWindow::onClientDisconnected);
-        connect(&server_, &DeviceServer::newMessageReceived, this, &MainWindow::processMessage);
 
-        server_.start();
-        logger->logMessage("App started");
-    }
+        auto* centralWidget = new QWidget{this};
+        setCentralWidget(centralWidget);
 
-    ~MainWindow()
-    {
-        server_.stop();
+        auto* mainLayout = new QVBoxLayout{centralWidget};
+        auto* buttonsLayout = new QHBoxLayout();
+
+        auto* addButton = new QPushButton{"Add", centralWidget};
+        auto* removeButton = new QPushButton{"Remove", centralWidget};
+        auto* spacer = new QSpacerItem{0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum};
+        buttonsLayout->addItem(spacer);
+
+        buttonsLayout->addWidget(addButton);
+        buttonsLayout->addWidget(removeButton);
+
+        mainLayout->addLayout(buttonsLayout);
+        devicesTable_ = new QTableView{centralWidget};
+        devicesTable_->setModel(serverController_.devicesModel());
+        mainLayout->addWidget(devicesTable_);
+        statusTable_ = new QTableView{centralWidget};
+        mainLayout->addWidget(statusTable_);
+        logText = new QPlainTextEdit{centralWidget};
+        logText->setReadOnly(true);
+        mainLayout->addWidget(logText);
+
+        setupWindowGeometry();
     }
 
 private slots:
     void onNewLogMessage(const QString& message)
     {
-        ui.logTextEdit->appendPlainText(message);
-    }
-
-    void onNewClientConnected(const DeviceInfo& device)
-    {
-        logger_->logMessage("New client connected, id = " + QString::number(device.id));
-        devicesModel_->addDevice(device);
-    }
-
-    void onClientDisconnected(std::size_t id)
-    {
-        logger_->logMessage("Client " + QString::number(id) + " disconnected");
-        devicesModel_->setDeviceDisconnected(id);
-    }
-
-    void processMessage(std::size_t clientId, const device_message::Message& message)
-    {
-        // logger_->logMessage(QString::number(clientId) + ": new message");
+        logText->appendPlainText(message);
     }
 
 private:  // methods
     void setupWindowGeometry()
     {
-        QScreen* screen = QGuiApplication::primaryScreen();
-        const QRect geometry = screen->availableGeometry();
+        const QRect& geometry = QGuiApplication::primaryScreen()->availableGeometry();
         const int width = geometry.width() * 0.7;
         const int height = geometry.height() * 0.6;
         resize(width, height);
@@ -76,8 +70,9 @@ private:  // methods
     }
 
 private:  // data
-    Ui::MainWindowClass ui;
     std::shared_ptr<Logger> logger_ = nullptr;
-    DeviceServer server_;
-    DevicesTableModel* devicesModel_ = nullptr;
+    DeviceServerController serverController_;
+    QTableView* devicesTable_ = nullptr;
+    QTableView* statusTable_ = nullptr;
+    QPlainTextEdit* logText = nullptr;
 };

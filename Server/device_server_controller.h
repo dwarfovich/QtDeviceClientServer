@@ -1,0 +1,55 @@
+#pragma once
+
+#include "device_server.h"
+#include "devices_table_model.h"
+
+#include "Core/logger.h"
+
+#include <QObject>
+
+class DeviceServerController : public QObject {
+public:
+    DeviceServerController(QObject* parent, const std::shared_ptr<Logger>& logger)
+        : QObject{parent}, logger_{logger}, server_{nullptr, logger}, devicesModel_{new DevicesTableModel{this}}
+    {
+        connect(&server_, &DeviceServer::newClientConnected, this, &DeviceServerController::onNewClientConnected);
+        connect(&server_, &DeviceServer::clientDisconnected, this, &DeviceServerController::onClientDisconnected);
+        connect(&server_, &DeviceServer::newMessageReceived, this, &DeviceServerController::processMessage);
+
+        server_.start();
+        //logger->logMessage("App started");
+    }
+
+    ~DeviceServerController()
+    {
+        server_.stop();
+    }
+
+    DevicesTableModel* devicesModel() const
+    {
+        return devicesModel_;
+    }
+
+private slots:
+    void onNewClientConnected(const DeviceInfo& device)
+    {
+        logger_->logMessage("New client connected, id = " + QString::number(device.id));
+        devicesModel_->addDevice(device);
+    }
+
+    void onClientDisconnected(std::size_t id)
+    {
+        logger_->logMessage("Client " + QString::number(id) + " disconnected");
+        devicesModel_->setDeviceDisconnected(id);
+    }
+
+    void processMessage(std::size_t clientId, const device_message::Message& message)
+    {
+        // logger_->logMessage(QString::number(clientId) + ": new message");
+    }
+
+private:
+    std::shared_ptr<Logger> logger_ = nullptr;
+    DeviceServer server_;
+    DevicesTableModel* devicesModel_ = nullptr;
+};
