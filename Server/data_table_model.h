@@ -20,6 +20,8 @@ class DataTableModel : public QAbstractTableModel {
         Uptime,
         CpuUsage,
         MemoryUsage,
+        SignalLampState,
+        IsActive,
         Log,
         ColumnsCount
     };
@@ -82,6 +84,10 @@ public:
                 return "CpuUsage";
             case Column::MemoryUsage:
                 return "MemoryUsage";
+            case Column::SignalLampState:
+                return "SignalLampState";
+            case Column::IsActive:
+                return "IsActive";
             case Column::Log:
                 return "Log";
             default:
@@ -153,7 +159,30 @@ public:
         }
     }
 
-private:
+    static constexpr int idColumn()
+    {
+        return static_cast<int>(Column::Id);
+    }
+
+    static constexpr int signalLampColumn()
+    {
+        return static_cast<int>(Column::SignalLampState);
+    }
+
+    bool signalLampState(std::size_t id) const{
+        const auto iter = idToData_.find(id);
+        if (iter == idToData_.end()) {
+            return false;
+        }
+
+        return iter->second.properties_.value("signalLampState").toBool();
+    }
+
+    const std::vector<size_t>& ids() const{
+        return ids_;
+    }
+
+ private:
     std::vector<size_t> ids_;
     std::unordered_map<size_t, DeviceData> idToData_;
     std::unordered_map<size_t, std::size_t> idToRow_;
@@ -188,6 +217,10 @@ private:  // methods
                 return QStringLiteral("cpuUsage");
             case Column::MemoryUsage:
                 return QStringLiteral("memoryUsage");
+            case Column::SignalLampState:
+                return QStringLiteral("signalLampState");
+            case Column::IsActive:
+                return QStringLiteral("isActive");
             case Column::Log:
                 return QStringLiteral("message");
             default:

@@ -48,7 +48,7 @@ public:
     void sendMessage(const MessageType& message)
     {
         auto data = jsonSerializer_.serialize(message) + device_message::dataEndMarker;
-        qDebug() << "Sending message: " << data;
+        //qDebug() << "Sending message: " << data;
         socket_.write(data);
     }
 
@@ -77,6 +77,7 @@ private slots:
         currentData_ += socket_.readAll();
         if (currentData_.endsWith(device_message::dataEndMarker)) {
             currentData_.resize(currentData_.length() - device_message::dataEndMarker.length());
+            qDebug() << "Received message: " << currentData_;
             const auto& message = jsonDeserializer_.deserialize(currentData_);
             emit newMessageReceived(message);
             currentData_.clear();

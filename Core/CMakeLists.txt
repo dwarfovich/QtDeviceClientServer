@@ -16,6 +16,7 @@ set(PROJECT_SOURCES
     json_message_serializer.h
     json_message_deserializer.h
     default_network_parameters.h
+    device_commands.h
 )
 
 add_library(${PROJECT_NAME} STATIC

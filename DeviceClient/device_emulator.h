@@ -38,6 +38,8 @@ private slots:
         if (message.type() == device_message::Type::StartRequest) {
             dataTimer_.start(randomDouble2Precision(settings_.minDataSendingPeriod, settings_.maxDataSendingPeriod));
             qDebug() << "Received StartRequest message, starting device emulation";
+        } else if (message.type() == device_message::Type::DeviceCommand) {
+            executeCommand(as<device_message::DeviceCommandMessage>(message));
         } else {
             qDebug() << "Received unsupported message of type: " << device_message::toString(message.type());
         }
@@ -65,6 +67,8 @@ private slots:
             case 1:
                 communicator_->sendMessage(DeviceStatus{.uptime = randomInt(0, 10),
                                                         .cpuUsage = randomInt(0, 100),
+                                                        .signalLampState = signalLampState_,
+                                                        .isActive = dataTimer_.isActive(),
                                                         .memoryUsage = randomDouble2Precision(0, 100)});
                 break;
             case 2:
@@ -76,6 +80,43 @@ private slots:
     }
 
 private:
+    void executeCommand(const device_message::DeviceCommandMessage& message)
+    {
+        qDebug() << "Executing command: " << int(message.command);
+        if (message.command == DeviceCommands::EnableSignalLamp) {
+            changeSignalLampState(message.parameter);
+        } else if (message.command == DeviceCommands::StartStop) {
+            changeWorkState(message.parameter);
+        } else {
+            qDebug() << "Unknown command, skipping it";
+        }
+    }
+
+    void changeWorkState(const QVariant& parameter)
+    {
+        bool newState = parameter.toBool();
+        if (newState) {
+            if (!dataTimer_.isActive()) {
+                dataTimer_.start();
+            }
+        } else {
+            dataTimer_.stop();
+            communicator_->sendMessage(device_message::DeviceStatus{.uptime = randomInt(0, 10),
+                                                                    .cpuUsage = randomInt(0, 100),
+                                                                    .signalLampState = signalLampState_,
+                                                                    .isActive = dataTimer_.isActive(),
+                                                                    .memoryUsage = randomDouble2Precision(0, 100)});
+        }
+    }
+
+    void changeSignalLampState(const QVariant& parameter)
+    {
+        signalLampState_ = parameter.toBool();
+        qDebug() << "New signalLampState_" << signalLampState_;
+    }
+
+    void explode() {}
+
     double randomDouble2Precision(double min, double max)
     {
         Q_ASSERT(min < max);
@@ -103,6 +144,8 @@ private:
 
 private:
     inline static constexpr DeviceEmulatorSettings settings_;
+
+    bool signalLampState_ = false;
 
     QTimer dataTimer_;
     BackendCommunicator* communicator_ = nullptr;

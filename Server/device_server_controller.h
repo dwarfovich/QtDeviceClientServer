@@ -18,7 +18,28 @@ public:
         connect(&server_, &DeviceServer::newMessageReceived, this, &DeviceServerController::processMessage);
 
         server_.start();
-        //logger->logMessage("App started");
+
+        // TODO: Remove debug calls:
+        //QTimer* timer = new QTimer{this};
+        //connect(timer, &QTimer::timeout, this, [this]() {
+        //    const auto& devices = devicesModel_->devices();
+        //    for( const auto& device : devices){
+        //    server_.sendMessage(device.id, device_message::DeviceCommandMessage{DeviceCommands::EnableSignalLamp, true});
+        //    }
+        //});
+        //timer->start(1000);
+
+        //QTimer::singleShot(500, [this](){
+        //    server_.sendMessage(1, device_message::DeviceCommandMessage{DeviceCommands::ChangeWorkState, true});
+        //    });
+
+        //QTimer::singleShot(1000, [this]() {
+        //    server_.sendMessage(1, device_message::DeviceCommandMessage{DeviceCommands::EnableSignalLamp, true});
+        //});
+
+        //QTimer::singleShot(1500, [this]() {
+        //    server_.sendMessage(1, device_message::DeviceCommandMessage{DeviceCommands::Explode});
+        //});
     }
 
     ~DeviceServerController()
@@ -35,6 +56,30 @@ public:
     {
         return dataModel_;
     }
+
+        void enableDeviceSignalLamp(std::size_t id, bool newState){
+            server_.sendMessage(id, device_message::DeviceCommandMessage{DeviceCommands::EnableSignalLamp, newState});
+        }
+
+        void startDevice(std::size_t id){
+            server_.sendMessage(id, device_message::DeviceCommandMessage{DeviceCommands::StartStop, true});
+        }
+        void stopoDevice(std::size_t id) {
+            server_.sendMessage(id, device_message::DeviceCommandMessage{DeviceCommands::StartStop, false});
+        }
+
+         void startAllDevices()
+        {
+             for (const auto& id : dataModel_->ids()){
+                server_.sendMessage(id, device_message::DeviceCommandMessage{DeviceCommands::StartStop, true});
+             }
+        }
+        void stopAllDevices()
+        {
+            for (const auto& id : dataModel_->ids()) {
+                server_.sendMessage(id, device_message::DeviceCommandMessage{DeviceCommands::StartStop, false});
+            }
+        }
 
 private slots:
     void onNewClientConnected(const DeviceInfo& device)

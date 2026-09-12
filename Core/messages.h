@@ -9,6 +9,7 @@
 #include <variant>
 
 #include "message_type.h"
+#include "device_commands.h"
 
 namespace device_message {
 
@@ -80,6 +81,8 @@ class DeviceStatus {
 
     Q_PROPERTY(int uptime MEMBER uptime)
     Q_PROPERTY(int cpuUsage MEMBER cpuUsage)
+    Q_PROPERTY(bool signalLampState MEMBER signalLampState)
+    Q_PROPERTY(bool isActive MEMBER isActive)
     Q_PROPERTY(double memoryUsage MEMBER memoryUsage)
 
 public:
@@ -87,6 +90,8 @@ public:
 
     int uptime = 0;
     int cpuUsage = 0;
+    bool signalLampState = false;
+    bool isActive = true;
     double memoryUsage = 0.0;
 };
 
@@ -107,7 +112,20 @@ struct StartRequest {
     static constexpr Type type = Type::StartRequest;
 };
 
-using MessageData = std::variant<NetworkMetrics, DeviceStatus, Log, StartRequest>;
+class DeviceCommandMessage {
+    Q_GADGET
+
+        Q_PROPERTY(DeviceCommands command MEMBER command)
+    Q_PROPERTY(QVariant parameter MEMBER parameter)
+
+public:
+    static constexpr Type type = Type::DeviceCommand;
+
+    DeviceCommands command = DeviceCommands::EnableSignalLamp;
+    QVariant parameter;
+};
+
+using MessageData = std::variant<NetworkMetrics, DeviceStatus, Log, StartRequest, DeviceCommandMessage>;
 
 class Message {
 public:
@@ -166,6 +184,8 @@ inline const JsonPropertyMap jsonPropertyMap{
     {"uptime", "uptime"},
     {"cpuUsage", "cpu_usage"},
     {"memoryUsage", "memory_usage"},
+    {"signalLampState", "signal_lamp_state"},
+    {"isActive", "is_active"},
 
     {"message", "message"},
     {"severity", "severity"},

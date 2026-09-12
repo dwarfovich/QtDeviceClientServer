@@ -4,6 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include "device_commands.h"
 #include "messages.h"
 
 class JsonMessageDeserializer {
@@ -13,11 +14,12 @@ public:
         const QJsonDocument document = QJsonDocument::fromJson(data);
 
         if (!document.isObject()) {
+            // TODO: Fix crash.
+            qDebug() << "Crash for " << data;
             throw std::runtime_error("JSON message is not an object");
         }
 
         const QJsonObject object = document.object();
-        auto d = object["type"].toString();
         const auto type = device_message::toMessageType(object["type"].toString());
 
         switch (type) {
@@ -29,6 +31,8 @@ public:
                 return device_message::Message{deserializeMessage<device_message::Log>(object)};
             case device_message::Type::StartRequest:
                 return device_message::Message{device_message::StartRequest{}};
+            case device_message::Type::DeviceCommand:
+                return device_message::Message{deserializeDeviceCommand(object)};
             default:
                 throw std::runtime_error("Unknown message type");
         }
@@ -60,6 +64,17 @@ private:
 
             property.writeOnGadget(&message, value);
         }
+
+        return message;
+    }
+
+    device_message::DeviceCommandMessage deserializeDeviceCommand(const QJsonObject& object) const
+    {
+        device_message::DeviceCommandMessage message;
+
+        message.command = static_cast<DeviceCommands>(object["command"].toInt());
+
+        message.parameter = object["parameter"].toVariant();
 
         return message;
     }

@@ -12,6 +12,7 @@ enum class Type : std::uint8_t {
     DeviceStatus,
     Log,
     StartRequest,
+    DeviceCommand,
     Unknown
 };
 
@@ -26,6 +27,8 @@ inline QString toString(Type type)
             return "Log";
         case Type::StartRequest:
             return "StartRequest";
+        case Type::DeviceCommand:
+            return "DeviceCommand";
         default:
             return "Unknown";
     }
@@ -41,6 +44,8 @@ inline Type toMessageType(const QString& str)
         return Type::Log;
     } else if (str == QStringLiteral("StartRequest")) {
         return Type::StartRequest;
+    } else if (str == QStringLiteral("DeviceCommand")) {
+        return Type::DeviceCommand;
     } else {
         return Type::Unknown;
     }

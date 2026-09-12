@@ -26,6 +26,11 @@ public:
         connect(&server_, &TcpServer::dataReceived, this, &DeviceServer::onDataReceived);
     }
 
+    void sendMessage(std::size_t clientId, const device_message::DeviceCommandMessage& message){
+        auto data = jsonSerializer_.serialize(message) + device_message::dataEndMarker;
+        server_.sendMessage(clientId, std::move(data));
+    }
+
 public slots:
     void start()
     {
@@ -64,6 +69,7 @@ private slots:
         }
         const auto& data = iter->second;
         if (data.endsWith(device_message::dataEndMarker)) {
+            logger_->messageAdded(data);
             processReceivedMessage(clientId, data);
         }
     }
@@ -71,9 +77,12 @@ private slots:
 private:  // methods
     void processReceivedMessage(std::size_t clientId, const QByteArray& data)
     {
+        //try{
         const auto& message = jsonDeserializer_.deserialize(data);
         currentMessages_.erase(clientId);
         emit newMessageReceived(clientId, message);
+        //} catch(...){
+        //}
     }
 
 private:  // data

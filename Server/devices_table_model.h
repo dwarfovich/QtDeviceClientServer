@@ -11,6 +11,9 @@ class DevicesTableModel : public QAbstractTableModel {
 public:
     DevicesTableModel(QObject* parent = nullptr) : QAbstractTableModel{parent} {}
 
+    const auto& devices() const {
+        return devices_;
+    }
     int rowCount(const QModelIndex& parent = {}) const override
     {
         return devices_.size();
@@ -44,6 +47,11 @@ public:
             default:
                 return {};
         }
+    }
+
+    static constexpr int idColumn()
+    {
+        return static_cast<int>(Column::Id);
     }
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
@@ -103,6 +111,7 @@ private:
         Id,
         Address,
         Status,
+        
         ColumnsCount
     };
 
