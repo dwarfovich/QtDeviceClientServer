@@ -6,8 +6,6 @@
 #include <QCoreApplication>
 #include <QTcpSocket>
 
-#include <memory>
-
 int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);

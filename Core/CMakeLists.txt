@@ -19,6 +19,7 @@ common_error.h
     default_network_parameters.h
     device_commands.h
     utilities.h
+    text_generator.h
 )
 
 add_library(${PROJECT_NAME} STATIC

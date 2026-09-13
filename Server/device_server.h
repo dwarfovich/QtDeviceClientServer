@@ -69,7 +69,6 @@ private slots:
         }
         const auto& data = iter->second;
         if (data.endsWith(device_message::dataEndMarker)) {
-            // logger_->messageAdded(data);
             processReceivedMessage(clientId, data);
         }
     }

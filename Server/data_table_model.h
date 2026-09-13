@@ -3,7 +3,12 @@
 #include "device_data.h"
 #include "device_info.h"
 
+#include "Core/utilities.h"
+
+#include <QApplication>
 #include <QAbstractTableModel>
+#include <QColor>
+#include <QPalette>
 
 #include <unordered_map>
 #include <variant>
@@ -22,7 +27,6 @@ class DataTableModel : public QAbstractTableModel {
         MemoryUsage,
         SignalLampState,
         IsActive,
-        Log,
         ColumnsCount
     };
 
@@ -44,13 +48,16 @@ public:
         if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<int>(ids_.size())) {
             return {};
         }
-        if (role != Qt::DisplayRole) {
-            return {};
-        }
 
         const auto id = ids_[index.row()];
-        if (columnType(index.column()) == Column::Id) {
-            return QVariant::fromValue(id);
+        const auto column = columnType(index.column());
+
+        if (column == Column::Id) {
+            if (role == Qt::DisplayRole) {
+                return QVariant::fromValue(id);
+            }
+
+            return {};
         }
 
         const auto iter = idToData_.find(id);
@@ -58,9 +65,35 @@ public:
             return {};
         }
 
-        const auto propertyName = columnPropertyName(columnType(index.column()));
+        const auto propertyName = columnPropertyName(column);
+        const auto value = iter->second.properties_.value(propertyName);
 
-        return iter->second.properties_.value(propertyName);
+        if (role == Qt::DisplayRole) {
+            return value;
+        }
+
+        /*witch (entry.severity) {
+                case LogMessageSeverity::Critical:
+                case LogMessageSeverity::High:
+                    return tint(baseColor, Qt::red, 0.1);
+                case LogMessageSeverity::Medium:
+                    return tint(baseColor, Qt::yellow, 0.1);
+
+                default:
+                    return {};
+            }*/
+        const QColor baseColor = QApplication::palette().color(QPalette::Base);
+        if (role == Qt::BackgroundRole) {
+            if (column == Column::IsActive && !value.toBool()) {
+                return tint(baseColor, Qt::red, 0.1);
+            }
+
+            if (column == Column::SignalLampState && value.toBool()) {
+                return tint(baseColor, Qt::yellow, 0.1);
+            }
+        }
+
+        return {};
     }
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
@@ -81,15 +114,13 @@ public:
             case Column::Uptime:
                 return "Uptime";
             case Column::CpuUsage:
-                return "CpuUsage";
+                return "Cpu usage";
             case Column::MemoryUsage:
-                return "MemoryUsage";
+                return "Memory usage";
             case Column::SignalLampState:
-                return "SignalLampState";
+                return "Signal state";
             case Column::IsActive:
-                return "IsActive";
-            case Column::Log:
-                return "Log";
+                return "Is active";
             default:
                 return {};
         }
@@ -182,11 +213,6 @@ public:
         return ids_;
     }
 
- private:
-    std::vector<size_t> ids_;
-    std::unordered_map<size_t, DeviceData> idToData_;
-    std::unordered_map<size_t, std::size_t> idToRow_;
-
 private:  // methods
     int toInt(Column column) const
     {
@@ -221,10 +247,13 @@ private:  // methods
                 return QStringLiteral("signalLampState");
             case Column::IsActive:
                 return QStringLiteral("isActive");
-            case Column::Log:
-                return QStringLiteral("message");
             default:
                 return {};
         }
     }
+
+ private: // data
+    std::vector<size_t> ids_;
+    std::unordered_map<size_t, DeviceData> idToData_;
+    std::unordered_map<size_t, std::size_t> idToRow_;
 };

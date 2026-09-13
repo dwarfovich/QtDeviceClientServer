@@ -6,16 +6,16 @@
 #include "Core/logger.h"
 
 #include <QGroupbox>
+#include <QGuiApplication>
 #include <QLineEdit>
 #include <QMainWindow>
-#include <QGuiApplication>
-//#include <QPlainTextEdit>
-#include <QScreen>
-#include <QPushButton>
-#include <QTableView>
-#include <QVBoxLayout>
+// #include <QPlainTextEdit>
 #include <QCheckBox>
 #include <QListView>
+#include <QPushButton>
+#include <QScreen>
+#include <QTableView>
+#include <QVBoxLayout>
 
 #include <memory>
 
@@ -30,7 +30,7 @@ public:
     {
         Q_ASSERT(logger);
 
-        //connect(logger_.get(), &Logger::messageAdded, this, &MainWindow::onNewLogMessage);
+        // connect(logger_.get(), &Logger::messageAdded, this, &MainWindow::onNewLogMessage);
 
         auto* centralWidget = new QWidget{this};
         setCentralWidget(centralWidget);
@@ -54,7 +54,7 @@ public:
 
         devicesTable_ = new QTableView{centralWidget};
         devicesTable_->setModel(serverController_.devicesModel());
-        
+
         controlBox_ = new QGroupBox{"Controls", centralWidget};
         controlBox_->setDisabled(true);
         controlBox_->setMinimumWidth(300);
@@ -67,6 +67,8 @@ public:
         signalLampCheckBox = new QCheckBox{"Signal lamp state"};
         signalLayout->addWidget(signalLampCheckBox);
         signalLayout->addStretch();
+        connect(signalLampCheckBox, &QCheckBox::toggled, this, &MainWindow::onSignalStateCheckBoxChanged);
+        //onSignalStateCheckBoxChanged
 
         controlsLayout->addLayout(signalLayout);
 
@@ -147,18 +149,21 @@ private slots:
         signalLampCheckBox->setChecked(newState);
     }
 
-    void onSignalStateCheckBoxChanged(bool toggled){
-        if (selectedDeviceId_ != 0){
-        serverController_.enableDeviceSignalLamp(selectedDeviceId_, toggled);
+    void onSignalStateCheckBoxChanged(bool toggled)
+    {
+        if (selectedDeviceId_ != 0) {
+            serverController_.enableDeviceSignalLamp(selectedDeviceId_, toggled);
         }
     }
 
-    void onStartDeviceButtonClicked(){
+    void onStartDeviceButtonClicked()
+    {
         if (selectedDeviceId_ != 0) {
             serverController_.startDevice(selectedDeviceId_);
         }
     }
-    void onStopDeviceButtonClicked() {
+    void onStopDeviceButtonClicked()
+    {
         if (selectedDeviceId_ != 0) {
             serverController_.stopoDevice(selectedDeviceId_);
         }
@@ -173,11 +178,6 @@ private slots:
     {
         serverController_.stopAllDevices();
     }
-
-
-    //connect(startDeviceButton, &QPushButton::clicked, this, &MainWindow::onStartDeviceButtonClicked);
-    //connect(stopDeviceButton, &QPushButton::clicked, this, &MainWindow::onStopDeviceButtonClicked);
-
 
 private:  // methods
     void setupWindowGeometry()
@@ -194,7 +194,7 @@ private:  // data
     DeviceServerController serverController_;
     QTableView* devicesTable_ = nullptr;
     QTableView* dataTable_ = nullptr;
-    //QPlainTextEdit* logText = nullptr;
+    // QPlainTextEdit* logText = nullptr;
     QGroupBox* controlBox_ = nullptr;
     QCheckBox* signalLampCheckBox = nullptr;
     QPushButton* startDeviceButton = nullptr;

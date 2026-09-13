@@ -14,6 +14,7 @@ public:
     const auto& devices() const {
         return devices_;
     }
+
     int rowCount(const QModelIndex& parent = {}) const override
     {
         return devices_.size();
@@ -106,12 +107,11 @@ public:
         }
     }
 
-private:
+private: // data
     enum class Column {
         Id,
         Address,
         Status,
-        
         ColumnsCount
     };
 

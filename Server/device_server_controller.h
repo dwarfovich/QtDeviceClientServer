@@ -50,6 +50,7 @@ public:
     {
         server_.sendMessage(id, device_message::DeviceCommandMessage{DeviceCommands::StartStop, true});
     }
+
     void stopoDevice(std::size_t id)
     {
         server_.sendMessage(id, device_message::DeviceCommandMessage{DeviceCommands::StartStop, false});
@@ -61,6 +62,7 @@ public:
             server_.sendMessage(id, device_message::DeviceCommandMessage{DeviceCommands::StartStop, true});
         }
     }
+
     void stopAllDevices()
     {
         for (const auto& id : dataModel_->ids()) {
@@ -89,7 +91,7 @@ private slots:
             const auto& data = as<device_message::Log>(message);
             logger_->logMessage(data.message, clientId, data.severity);
         } else {
-        dataModel_->updateDevice(clientId, message);
+            dataModel_->updateDevice(clientId, message);
         }
     }
 

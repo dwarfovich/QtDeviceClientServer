@@ -2,12 +2,11 @@
 
 #include "backend_communicator.h"
 #include "device_emulator_settings.h"
-#include "text_generator.h"
+
+#include "Core/text_generator.h"
 
 #include <QRandomGenerator>
 #include <QTimer>
-
-#include <atomic>
 
 class DeviceEmulator : public QObject {
     Q_OBJECT
@@ -15,7 +14,6 @@ class DeviceEmulator : public QObject {
 public:
     DeviceEmulator(QObject* parent) : QObject{parent}, communicator_{new BackendCommunicator{this}}
     {
-        // connect(communicator_, &BackendCommunicator::connected, this, &DeviceEmulator::onNetworkConnected);
         connect(communicator_, &BackendCommunicator::disconnected, this, &DeviceEmulator::onNetworkDisconnected);
         connect(communicator_, &BackendCommunicator::newMessageReceived, this, &DeviceEmulator::processMessage);
         connect(&dataTimer_, &QTimer::timeout, this, &DeviceEmulator::onDataTimerTimeout);
@@ -26,6 +24,7 @@ public slots:
     {
         communicator_->start();
     }
+
     void stop()
     {
         dataTimer_.stop();
@@ -58,7 +57,7 @@ private slots:
     void sendRandomData()
     {
         using namespace device_message;
-        switch (randomGenerator_.bounded(3)) {
+        switch (QRandomGenerator::global()->bounded(3)) {
             case 0:
                 communicator_->sendMessage(NetworkMetrics{.bandwidth = randomDouble2Precision(0., 1000.),
                                                           .latency = randomDouble2Precision(0., 1000.),
@@ -75,20 +74,19 @@ private slots:
                 communicator_->sendMessage(Log{.message = randomText(), .severity = randomLogMessageSeverity()});
                 break;
             default:
-                Q_UNREACHABLE();
+                break;
         }
     }
 
 private:
     void executeCommand(const device_message::DeviceCommandMessage& message)
     {
-        qDebug() << "Executing command: " << int(message.command);
         if (message.command == DeviceCommands::EnableSignalLamp) {
             changeSignalLampState(message.parameter);
         } else if (message.command == DeviceCommands::StartStop) {
             changeWorkState(message.parameter);
         } else {
-            qDebug() << "Unknown command, skipping it";
+            qDebug() << "Received unknown command, skipping it";
         }
     }
 
@@ -112,35 +110,6 @@ private:
     void changeSignalLampState(const QVariant& parameter)
     {
         signalLampState_ = parameter.toBool();
-        qDebug() << "New signalLampState_" << signalLampState_;
-    }
-
-    void explode() {}
-
-    double randomDouble2Precision(double min, double max)
-    {
-        Q_ASSERT(min < max);
-
-        return std::round((min + randomGenerator_.generateDouble() * (max - min)) * 100.0) / 100.0;
-    }
-
-    template <typename T>
-    T randomInt(T min, T max)
-    {
-        Q_ASSERT(min < max);
-
-        return randomGenerator_.bounded(min, max);
-    }
-
-    QString randomText()
-    {
-        return generateText(randomInt(0, 3));
-    }
-
-    LogMessageSeverity randomLogMessageSeverity()
-    {
-        auto number = randomInt(0, static_cast<int>(LogMessageSeverity::Unknown));
-        return LogMessageSeverity(number);
     }
 
 private:
@@ -150,5 +119,4 @@ private:
 
     QTimer dataTimer_;
     BackendCommunicator* communicator_ = nullptr;
-    QRandomGenerator randomGenerator_;
 };

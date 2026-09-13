@@ -8,6 +8,8 @@
 #include <QTcpSocket>
 #include <QTimer>
 
+#include <stdexcept>
+
 class BackendCommunicator : public QObject {
     Q_OBJECT
 public:
@@ -46,9 +48,13 @@ public:
     template <typename MessageType>
     void sendMessage(const MessageType& message)
     {
-        auto data = jsonSerializer_.serialize(message) + device_message::dataEndMarker;
-        //qDebug() << "Sending message: " << data;
-        socket_.write(data);
+        try {
+            const auto& data = jsonSerializer_.serialize(message) + device_message::dataEndMarker;
+            socket_.write(data);
+            qDebug() << "Data sent: " << data;
+        } catch (const std::exception& e) {
+            qDebug() << "Exception: failed to serialize JSON. " << e.what();
+        }
     }
 
 signals:
@@ -92,14 +98,16 @@ private:
     void connectSocket()
     {
         if (socket_.state() != QAbstractSocket::UnconnectedState) {
-            if (socket_.state() != QAbstractSocket::ConnectingState){
-            qDebug() << "Connection state is still not valid, skipping reconnection attempt. current state: "
-                     << socket_.state(); 
+            if (socket_.state() != QAbstractSocket::ConnectingState) {
+                qDebug() << "Connection state is still not valid, skipping reconnection attempt. current state: "
+                         << socket_.state();
             } else {
                 qDebug() << "Still trying to connect";
             }
+
             return;
         }
+
         using default_network_parameters::serverAddress;
         using default_network_parameters::serverPort;
         qDebug() << "Trying to connect to " << serverAddress << ":" << serverPort;
