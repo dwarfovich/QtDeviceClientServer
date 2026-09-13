@@ -2,6 +2,7 @@
 
 #include "device_data.h"
 #include "device_info.h"
+#include "gui_utilities.h"
 
 #include "Core/utilities.h"
 
@@ -72,22 +73,11 @@ public:
             return value;
         }
 
-        /*witch (entry.severity) {
-                case LogMessageSeverity::Critical:
-                case LogMessageSeverity::High:
-                    return tint(baseColor, Qt::red, 0.1);
-                case LogMessageSeverity::Medium:
-                    return tint(baseColor, Qt::yellow, 0.1);
-
-                default:
-                    return {};
-            }*/
         const QColor baseColor = QApplication::palette().color(QPalette::Base);
         if (role == Qt::BackgroundRole) {
             if (column == Column::IsActive && !value.toBool()) {
                 return tint(baseColor, Qt::red, 0.1);
             }
-
             if (column == Column::SignalLampState && value.toBool()) {
                 return tint(baseColor, Qt::yellow, 0.1);
             }

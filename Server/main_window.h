@@ -5,13 +5,12 @@
 
 #include "Core/logger.h"
 
+#include <QCheckBox>
 #include <QGroupbox>
 #include <QGuiApplication>
 #include <QLineEdit>
-#include <QMainWindow>
-// #include <QPlainTextEdit>
-#include <QCheckBox>
 #include <QListView>
+#include <QMainWindow>
 #include <QPushButton>
 #include <QScreen>
 #include <QTableView>
@@ -30,93 +29,7 @@ public:
     {
         Q_ASSERT(logger);
 
-        // connect(logger_.get(), &Logger::messageAdded, this, &MainWindow::onNewLogMessage);
-
-        auto* centralWidget = new QWidget{this};
-        setCentralWidget(centralWidget);
-
-        auto* mainLayout = new QVBoxLayout{centralWidget};
-
-        auto* buttonsLayout = new QHBoxLayout();
-
-        auto* startAllDevicesButton = new QPushButton{"Start all devices", centralWidget};
-        auto* stopAllDevicesButton = new QPushButton{"Stop all devices", centralWidget};
-        connect(startAllDevicesButton, &QPushButton::clicked, this, &MainWindow::onStartAllDevicesButtonClicked);
-        connect(stopAllDevicesButton, &QPushButton::clicked, this, &MainWindow::onStopAllDevicesButtonClicked);
-
-        buttonsLayout->addWidget(startAllDevicesButton);
-        buttonsLayout->addWidget(stopAllDevicesButton);
-        buttonsLayout->addStretch();
-
-        mainLayout->addLayout(buttonsLayout);
-
-        auto* contentLayout = new QHBoxLayout();
-
-        devicesTable_ = new QTableView{centralWidget};
-        devicesTable_->setModel(serverController_.devicesModel());
-
-        controlBox_ = new QGroupBox{"Controls", centralWidget};
-        controlBox_->setDisabled(true);
-        controlBox_->setMinimumWidth(300);
-
-        auto* controlsLayout = new QVBoxLayout{controlBox_};
-
-        controlsLayout->addStretch();
-
-        auto* signalLayout = new QHBoxLayout;
-        signalLampCheckBox = new QCheckBox{"Signal lamp state"};
-        signalLayout->addWidget(signalLampCheckBox);
-        signalLayout->addStretch();
-        connect(signalLampCheckBox, &QCheckBox::toggled, this, &MainWindow::onSignalStateCheckBoxChanged);
-        //onSignalStateCheckBoxChanged
-
-        controlsLayout->addLayout(signalLayout);
-
-        auto* controlButtonsLayout = new QHBoxLayout;
-        startDeviceButton = new QPushButton{"Start device"};
-        stopDeviceButton = new QPushButton{"Stop device"};
-
-        controlButtonsLayout->addWidget(startDeviceButton);
-        controlButtonsLayout->addWidget(stopDeviceButton);
-        controlButtonsLayout->addStretch();
-
-        controlsLayout->addLayout(controlButtonsLayout);
-
-        controlsLayout->addStretch();
-
-        connect(startDeviceButton, &QPushButton::clicked, this, &MainWindow::onStartDeviceButtonClicked);
-        connect(stopDeviceButton, &QPushButton::clicked, this, &MainWindow::onStopDeviceButtonClicked);
-
-        contentLayout->addWidget(devicesTable_, 1);
-        contentLayout->addWidget(controlBox_);
-
-        mainLayout->addLayout(contentLayout);
-
-        dataTable_ = new QTableView{centralWidget};
-        dataTable_->setModel(serverController_.dataModel());
-        mainLayout->addWidget(dataTable_);
-
-        logView_ = new QListView;
-        logModel_ = new LogModel{logger_};
-        connect(logModel_, &QAbstractItemModel::rowsInserted, this, [this] {
-            QTimer::singleShot(0, this, [this] { logView_->scrollToBottom(); });
-        });
-
-        logView_->setModel(logModel_);
-        mainLayout->addWidget(logView_);
-        QFont font{"Consolas"};
-        font.setStyleHint(QFont::Monospace);
-        logView_->setFont(font);
-
-        connect(devicesTable_->selectionModel(),
-                &QItemSelectionModel::selectionChanged,
-                this,
-                &MainWindow::onDeviceSelected);
-        connect(dataTable_->selectionModel(),
-                &QItemSelectionModel::selectionChanged,
-                this,
-                &MainWindow::onDeviceSelected);
-
+        setupGui();
         setupWindowGeometry();
     }
 
@@ -189,12 +102,89 @@ private:  // methods
         move(geometry.x() + (geometry.width() - width) / 2, geometry.y() + (geometry.height() - height) / 2);
     }
 
+    void setupGui()
+    {
+        auto* centralWidget = new QWidget{this};
+        setCentralWidget(centralWidget);
+
+        auto* mainLayout = new QVBoxLayout{centralWidget};
+
+        auto* buttonsLayout = new QHBoxLayout();
+        auto* startAllDevicesButton = new QPushButton{"Start all devices", centralWidget};
+        auto* stopAllDevicesButton = new QPushButton{"Stop all devices", centralWidget};
+        connect(startAllDevicesButton, &QPushButton::clicked, this, &MainWindow::onStartAllDevicesButtonClicked);
+        connect(stopAllDevicesButton, &QPushButton::clicked, this, &MainWindow::onStopAllDevicesButtonClicked);
+        buttonsLayout->addWidget(startAllDevicesButton);
+        buttonsLayout->addWidget(stopAllDevicesButton);
+        buttonsLayout->addStretch();
+        mainLayout->addLayout(buttonsLayout);
+
+        auto* contentLayout = new QHBoxLayout();
+
+        devicesTable_ = new QTableView{centralWidget};
+        devicesTable_->setModel(serverController_.devicesModel());
+
+        controlBox_ = new QGroupBox{"Controls", centralWidget};
+        controlBox_->setDisabled(true);
+        controlBox_->setMinimumWidth(300);
+        auto* controlsLayout = new QVBoxLayout{controlBox_};
+        controlsLayout->addStretch();
+
+        auto* signalLayout = new QHBoxLayout;
+        signalLampCheckBox = new QCheckBox{"Signal lamp state"};
+        signalLayout->addWidget(signalLampCheckBox);
+        signalLayout->addStretch();
+        connect(signalLampCheckBox, &QCheckBox::toggled, this, &MainWindow::onSignalStateCheckBoxChanged);
+        controlsLayout->addLayout(signalLayout);
+
+        auto* controlButtonsLayout = new QHBoxLayout;
+        startDeviceButton = new QPushButton{"Start device"};
+        stopDeviceButton = new QPushButton{"Stop device"};
+        connect(startDeviceButton, &QPushButton::clicked, this, &MainWindow::onStartDeviceButtonClicked);
+        connect(stopDeviceButton, &QPushButton::clicked, this, &MainWindow::onStopDeviceButtonClicked);
+        controlButtonsLayout->addWidget(startDeviceButton);
+        controlButtonsLayout->addWidget(stopDeviceButton);
+        controlButtonsLayout->addStretch();
+
+        controlsLayout->addLayout(controlButtonsLayout);
+        controlsLayout->addStretch();
+
+        contentLayout->addWidget(devicesTable_, 1);
+        contentLayout->addWidget(controlBox_);
+
+        mainLayout->addLayout(contentLayout);
+
+        dataTable_ = new QTableView{centralWidget};
+        dataTable_->setModel(serverController_.dataModel());
+        mainLayout->addWidget(dataTable_);
+
+        logView_ = new QListView;
+        logModel_ = new LogModel{logger_};
+        connect(logModel_, &QAbstractItemModel::rowsInserted, this, [this] {
+            QTimer::singleShot(0, this, [this] { logView_->scrollToBottom(); });
+        });
+
+        logView_->setModel(logModel_);
+        mainLayout->addWidget(logView_);
+        QFont font{"Consolas"};
+        font.setStyleHint(QFont::Monospace);
+        logView_->setFont(font);
+
+        connect(devicesTable_->selectionModel(),
+                &QItemSelectionModel::selectionChanged,
+                this,
+                &MainWindow::onDeviceSelected);
+        connect(dataTable_->selectionModel(),
+                &QItemSelectionModel::selectionChanged,
+                this,
+                &MainWindow::onDeviceSelected);
+    }
+
 private:  // data
     std::shared_ptr<Logger> logger_ = nullptr;
     DeviceServerController serverController_;
     QTableView* devicesTable_ = nullptr;
     QTableView* dataTable_ = nullptr;
-    // QPlainTextEdit* logText = nullptr;
     QGroupBox* controlBox_ = nullptr;
     QCheckBox* signalLampCheckBox = nullptr;
     QPushButton* startDeviceButton = nullptr;

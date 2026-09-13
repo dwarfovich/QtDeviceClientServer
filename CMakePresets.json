@@ -4,6 +4,7 @@
     {
       "hidden": true,
       "name": "Qt",
+      "binaryDir": "${sourceDir}/Out/build/${presetName}",
       "cacheVariables": {
         "CMAKE_PREFIX_PATH": "$env{QTDIR}"
       },
