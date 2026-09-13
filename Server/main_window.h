@@ -119,11 +119,6 @@ public:
     }
 
 private slots:
-    void onNewLogMessage(const QString& message)
-    {
-        //logText->appendPlainText(message);
-    }
-
     void onDeviceSelected(const QItemSelection& selected, const QItemSelection&)
     {
         if (selected.isEmpty()) {

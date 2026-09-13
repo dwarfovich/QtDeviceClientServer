@@ -1,58 +1,56 @@
 #pragma once
 
+#include "common_error.h"
+#include "device_commands.h"
+#include "messages.h"
+
 #include <QByteArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 
-#include "device_commands.h"
-#include "messages.h"
+#include <expected>
 
 class JsonMessageDeserializer {
 public:
-    device_message::Message deserialize(const QByteArray& data) const
+    std::expected<device_message::Message, CommonError> deserialize(const QByteArray& data) const
     {
         const QJsonDocument document = QJsonDocument::fromJson(data);
-
         if (!document.isObject()) {
-            // TODO: Fix crash.
-            qDebug() << "Crash for " << data;
-            throw std::runtime_error("JSON message is not an object");
+            return std::unexpected(CommonError::FailedToCreateJsonDocument);
         }
 
+        using namespace device_message;
         const QJsonObject object = document.object();
-        const auto type = device_message::toMessageType(object["type"].toString());
-
+        const auto type = toMessageType(object["type"].toString());
         switch (type) {
-            case device_message::Type::NetworkMetrics:
-                return device_message::Message{deserializeMessage<device_message::NetworkMetrics>(object)};
-            case device_message::Type::DeviceStatus:
-                return device_message::Message{deserializeMessage<device_message::DeviceStatus>(object)};
-            case device_message::Type::Log:
-                return device_message::Message{deserializeMessage<device_message::Log>(object)};
-            case device_message::Type::StartRequest:
-                return device_message::Message{device_message::StartRequest{}};
-            case device_message::Type::DeviceCommand:
-                return device_message::Message{deserializeDeviceCommand(object)};
+            case Type::NetworkMetrics:
+                return Message{deserializeMessage<NetworkMetrics>(object)};
+            case Type::DeviceStatus:
+                return Message{deserializeMessage<device_message::DeviceStatus>(object)};
+            case Type::Log:
+                return Message{deserializeMessage<Log>(object)};
+            case Type::StartRequest:
+                return Message{StartRequest{}};
+            case Type::DeviceCommand:
+                return Message{deserializeDeviceCommand(object)};
             default:
-                throw std::runtime_error("Unknown message type");
+                return std::unexpected(CommonError::FailedToRetreiveTypeOfMessageFromJson);
         }
     }
 
 private:
-    template <typename T>
-    T deserializeMessage(const QJsonObject& object) const
+    template <typename MessageClass>
+    MessageClass deserializeMessage(const QJsonObject& object) const
     {
-        T message;
-        const QMetaObject& metaObject = T::staticMetaObject;
-
+        MessageClass message;
+        const QMetaObject& metaObject = MessageClass::staticMetaObject;
         for (int i = 0; i < metaObject.propertyCount(); ++i) {
             const QMetaProperty property = metaObject.property(i);
             const std::string& propertyName = property.name();
             const auto iter = device_message::jsonPropertyMap.find(propertyName);
-            const QString& jsonName = iter != device_message::jsonPropertyMap.end()
+            const QString& jsonName = iter != device_message::jsonPropertyMap.cend()
                                           ? QString::fromStdString(iter->second)
                                           : QString::fromLatin1(property.name());
-            // TODO: Handle errors.
             if (!object.contains(jsonName)) {
                 continue;
             }
@@ -73,9 +71,7 @@ private:
     device_message::DeviceCommandMessage deserializeDeviceCommand(const QJsonObject& object) const
     {
         device_message::DeviceCommandMessage message;
-
         message.command = static_cast<DeviceCommands>(object["command"].toInt());
-
         message.parameter = object["parameter"].toVariant();
 
         return message;

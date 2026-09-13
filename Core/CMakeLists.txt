@@ -6,18 +6,19 @@ find_package(Qt6 REQUIRED COMPONENTS Core Network)
 qt_standard_project_setup()
 
 set(PROJECT_SOURCES
+common_error.h
     logger.h
     log_message_severity.h
     log_entry.h
     tcp_server.h
     tcp_server_worker.h
-    message_end_marker.h
     message_type.h
     messages.h
     json_message_serializer.h
     json_message_deserializer.h
     default_network_parameters.h
     device_commands.h
+    utilities.h
 )
 
 add_library(${PROJECT_NAME} STATIC

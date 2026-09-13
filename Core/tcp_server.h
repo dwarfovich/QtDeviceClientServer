@@ -50,6 +50,7 @@ public slots:
         if (workerThread_.isRunning() || stopPended_) {
             return;
         }
+
         worker_->setParent(nullptr);
         worker_->moveToThread(&workerThread_);
         connect(
@@ -64,7 +65,9 @@ public slots:
 
     void stop()
     {
-        Q_ASSERT(QThread::currentThread() != &workerThread_);
+        Q_ASSERT_X(QThread::currentThread() != &workerThread_,
+                   Q_FUNC_INFO,
+                   "Cannot stop worker thread from itself because the deadlock will occure");
 
         if (!workerThread_.isRunning() || stopPended_) {
             return;

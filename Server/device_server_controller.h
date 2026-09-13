@@ -85,11 +85,12 @@ private slots:
 
     void processMessage(std::size_t clientId, const device_message::Message& message)
     {
+        if (message.type() == device_message::Log::type) {
+            const auto& data = as<device_message::Log>(message);
+            logger_->logMessage(data.message, clientId, data.severity);
+        } else {
         dataModel_->updateDevice(clientId, message);
-        try{
-        const auto& data = as<device_message::Log>(message);
-        logger_->logMessage(data.message, clientId, data.severity);
-        } catch(...){}
+        }
     }
 
 private:

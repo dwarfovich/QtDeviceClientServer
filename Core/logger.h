@@ -12,11 +12,11 @@ class Logger : public QObject {
     Q_OBJECT
 
 public:
-
-
-    void logMessage(const QString& message, std::size_t source = LogEntry::systemId, LogMessageSeverity severity = LogMessageSeverity::Info)
+    void logMessage(const QString& message,
+                    std::size_t source = LogEntry::systemId,
+                    LogMessageSeverity severity = LogMessageSeverity::Info)
     {
-        bool removedOldest = false;
+        bool oldestEntryRemoved = false;
         {
             std::lock_guard lock{mutex_};
 
@@ -24,11 +24,11 @@ public:
 
             if (log_.size() > maxLogLength_) {
                 log_.pop_front();
-                removedOldest = true;
+                oldestEntryRemoved = true;
             }
         }
 
-        emit messageAdded(removedOldest);
+        emit messageAdded(oldestEntryRemoved);
     }
 
     std::size_t size() const

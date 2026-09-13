@@ -3,7 +3,6 @@
 #include "Core/default_network_parameters.h"
 #include "Core/json_message_deserializer.h"
 #include "Core/json_message_serializer.h"
-#include "Core/message_end_marker.h"
 #include "Core/messages.h"
 
 #include <QTcpSocket>
@@ -79,7 +78,7 @@ private slots:
             currentData_.resize(currentData_.length() - device_message::dataEndMarker.length());
             qDebug() << "Received message: " << currentData_;
             const auto& message = jsonDeserializer_.deserialize(currentData_);
-            emit newMessageReceived(message);
+            emit newMessageReceived(message.value());
             currentData_.clear();
         }
     }

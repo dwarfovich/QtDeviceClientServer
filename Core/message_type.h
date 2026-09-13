@@ -20,17 +20,17 @@ inline QString toString(Type type)
 {
     switch (type) {
         case Type::NetworkMetrics:
-            return "NetworkMetrics";
+            return QStringLiteral("NetworkMetrics");
         case Type::DeviceStatus:
-            return "DeviceStatus";
+            return QStringLiteral("DeviceStatus");
         case Type::Log:
-            return "Log";
+            return QStringLiteral("Log");
         case Type::StartRequest:
-            return "StartRequest";
+            return QStringLiteral("StartRequest");
         case Type::DeviceCommand:
-            return "DeviceCommand";
+            return QStringLiteral("DeviceCommand");
         default:
-            return "Unknown";
+            return QStringLiteral("Unknown");
     }
 }
 

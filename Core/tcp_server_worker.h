@@ -60,7 +60,7 @@ public slots:
         checkStopStatus();
     }
 
-    void write(std::size_t id, const QByteArray& data)
+    void write(std::size_t id, QByteArray data)
     {
         assertWorkerThread();
 

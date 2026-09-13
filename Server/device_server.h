@@ -7,7 +7,6 @@
 #include "Core/json_message_deserializer.h"
 #include "Core/json_message_serializer.h"
 #include "Core/logger.h"
-#include "Core/message_end_marker.h"
 #include "Core/tcp_server.h"
 
 #include <memory>
@@ -26,7 +25,8 @@ public:
         connect(&server_, &TcpServer::dataReceived, this, &DeviceServer::onDataReceived);
     }
 
-    void sendMessage(std::size_t clientId, const device_message::DeviceCommandMessage& message){
+    void sendMessage(std::size_t clientId, const device_message::DeviceCommandMessage& message)
+    {
         auto data = jsonSerializer_.serialize(message) + device_message::dataEndMarker;
         server_.sendMessage(clientId, std::move(data));
     }
@@ -69,7 +69,7 @@ private slots:
         }
         const auto& data = iter->second;
         if (data.endsWith(device_message::dataEndMarker)) {
-            //logger_->messageAdded(data);
+            // logger_->messageAdded(data);
             processReceivedMessage(clientId, data);
         }
     }
@@ -77,12 +77,13 @@ private slots:
 private:  // methods
     void processReceivedMessage(std::size_t clientId, const QByteArray& data)
     {
-        //try{
         const auto& message = jsonDeserializer_.deserialize(data);
+        if (message) {
+            emit newMessageReceived(clientId, message.value());
+        } else {
+            logger_->logMessage("Failed to create JSON document for data: " + data.left(100));
+        }
         currentMessages_.erase(clientId);
-        emit newMessageReceived(clientId, message);
-        //} catch(...){
-        //}
     }
 
 private:  // data

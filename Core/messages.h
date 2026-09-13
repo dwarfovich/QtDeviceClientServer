@@ -1,45 +1,21 @@
 #pragma once
 
+#include "device_commands.h"
+#include "log_message_severity.h"
+#include "message_type.h"
+
 #include <QMetaProperty>
 #include <QString>
+
 #include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <variant>
 
-#include "device_commands.h"
-#include "log_message_severity.h"
-#include "message_type.h"
-
 namespace device_message {
 
-// enum class LogMessageSeverity : std::uint8_t {
-//     Info,
-//     Low,
-//     Medium,
-//     High,
-//     Critical,
-//     Unknown
-// };
-
-// inline QString toString(::LogMessageSeverity severity)
-//{
-//     switch (severity) {
-//         case LogMessageSeverity::Info:
-//             return "INFO";
-//         case LogMessageSeverity::Low:
-//             return "LOW";
-//         case LogMessageSeverity::Medium:
-//             return "MEDIUM";
-//         case LogMessageSeverity::High:
-//             return "HIGH";
-//         case LogMessageSeverity::Critical:
-//             return "CRITICAL";
-//         default:
-//             return "UNKNOWN";
-//     }
-// }
+inline const QByteArray dataEndMarker = "\r\n\r\n";
 
 class NetworkMetrics {
     Q_GADGET
@@ -88,7 +64,8 @@ public:
     LogMessageSeverity severity = LogMessageSeverity::Unknown;
 };
 
-struct StartRequest {
+class StartRequest {
+public:
     static constexpr Type type = Type::StartRequest;
 };
 
@@ -137,9 +114,7 @@ private:
 template <typename T>
 const T& as(const Message& message)
 {
-    if (message.type() != T::type) {
-        throw std::bad_cast{};
-    }
+    Q_ASSERT(message.type() == T::type);
 
     return std::get<T>(message.data());
 }
@@ -147,9 +122,7 @@ const T& as(const Message& message)
 template <typename T>
 T& as(Message& message)
 {
-    if (message.type() != T::type) {
-        throw std::bad_cast{};
-    }
+    Q_ASSERT(message.type() == T::type);
 
     return std::get<T>(message.data());
 }
@@ -169,6 +142,9 @@ inline const JsonPropertyMap jsonPropertyMap{
 
     {"message", "message"},
     {"severity", "severity"},
+
+    {"command", "command"},
+    {"parameter", "parameter"},
 };
 
 }  // namespace device_message

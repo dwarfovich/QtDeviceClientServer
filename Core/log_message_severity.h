@@ -4,7 +4,7 @@
 
 #include <cinttypes>
 
-enum class LogMessageSeverity : int {
+enum class LogMessageSeverity : std::uint8_t {
     Info,
     Low,
     Medium,
@@ -29,3 +29,4 @@ inline QString toString(LogMessageSeverity severity){
             return QStringLiteral("Unknown");
     }
 }
+
